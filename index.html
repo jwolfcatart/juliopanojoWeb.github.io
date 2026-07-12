@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Julio Panojo</title>
+<link rel="icon" href="images/logo.jpg">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Reproductor mini flotante (solo visible cuando se reproduce música) -->
+<!-- Nav flotante -->
+<nav class="float-nav" id="floatNav" aria-label="Navegación de secciones">
+  <a class="nav-home" href="#inicio"><img src="images/logo.jpg" alt="Inicio"></a>
+  <div class="nav-icons">
+    <a href="#arte"><img src="images/inicio/ilustracion.jpg" alt="Arte"><span class="tip">J.Wolfcat ART</span><span class="dot"></span></a>
+    <a href="#musica"><img src="images/inicio/musica.jpg" alt="Música"><span class="tip">The Cat Wolfson Music Experience</span><span class="dot"></span></a>
+    <a href="#video"><img src="images/inicio/video.jpg" alt="Video"><span class="tip">0:45 Audiovisual</span><span class="dot"></span></a>
+    <a href="#voz"><img src="images/inicio/voz.jpg" alt="Voz"><span class="tip">Locución y Doblaje</span><span class="dot"></span></a>
+  </div>
+</nav>
+
+<!-- Mini reproductor de Spotify: solo visible mientras suena música -->
+<div class="spotify-mini" id="spotifyMini">
+  <button id="spotifyMiniBtn" aria-label="Reproducir/Pausar">
+    <svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+  </button>
+  <div class="vu-bars"><span></span><span></span><span></span><span></span></div>
+</div>
+
+<!-- Píldora de contacto, fija en la parte inferior -->
+<div class="contact-pill">
+  <a href="https://ko-fi.com/wolfcatart" target="_blank" rel="noopener">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h14v2h1a4 4 0 0 1 0 8h-1.2A6 6 0 0 1 12 18H8a6 6 0 0 1-5-5.9V3zm14 4v4h1a2 2 0 0 0 0-4h-1z"/></svg>
+    Ko-fi
+  </a>
+  <a href="https://www.patreon.com/cw/wolfcatart" target="_blank" rel="noopener">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h3v18H3zM14 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14z"/></svg>
+    Patreon
+  </a>
+  <a href="mailto:julio.panojo@gmail.com">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M2 5h20v14H2V5zm2 2v.01L12 13l8-5.99V7l-8 6-8-6zm0 2.5V17h16V9.5l-8 6-8-6z"/></svg>
+    Email
+  </a>
+  <a href="https://www.linkedin.com/in/juliopanojo" target="_blank" rel="noopener">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zm7 0h3.8v1.7h.05c.53-.95 1.83-1.95 3.77-1.95 4.03 0 4.78 2.5 4.78 5.76V21h-4v-5.7c0-1.36-.02-3.1-1.9-3.1-1.9 0-2.2 1.47-2.2 3v5.8h-4z"/></svg>
+    LinkedIn
+  </a>
+</div>
+
+<main>
+
+  <!-- INICIO -->
+  <section id="inicio" class="op-section hero" style="padding-top:40px;">
+    <div class="hero-top">
+      <img class="logo-big" id="heroLogo" src="images/inicio/julio.jpg" alt="Julio Panojo">
+      <h1 id="heroName">Julio Panojo</h1>
+    </div>
+
+    <nav class="hero-nav">
+      <a href="#arte"><img src="images/inicio/ilustracion.jpg" alt="">J.Wolfcat ART</a>
+      <a href="#musica"><img src="images/inicio/musica.jpg" alt="">The Cat Wolfson Music Experience</a>
+      <a href="#video"><img src="images/inicio/video.jpg" alt="">0:45 Audiovisual</a>
+      <a href="#voz"><img src="images/inicio/voz.jpg" alt="">Locución y Doblaje</a>
+    </nav>
+  </section>
+
+  <!-- ARTE -->
+  <section id="arte" class="op-section">
+    <div class="wrap">
+      <div class="section-title-row"><img src="images/inicio/ilustracion.jpg" alt=""><h2 class="section-title">J.Wolfcat ART</h2></div>
+
+      <div class="float-gallery">
+        <div class="float-item"><img class="lightbox-img" src="images/arte/3d1.jpg" loading="lazy" alt=""><p class="cap">Arte 3D</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/3d2.jpg" loading="lazy" alt=""><p class="cap">Arte 3D</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/3d3.jpg" loading="lazy" alt=""><p class="cap">Arte 3D</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/3d4.jpg" loading="lazy" alt=""><p class="cap">Arte 3D</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/3d5.jpg" loading="lazy" alt=""><p class="cap">Arte 3D</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/3d6.jpg" loading="lazy" alt=""><p class="cap">Arte 3D</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/ilus1.jpg" loading="lazy" alt=""><p class="cap">Ilustración</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/ilus2.jpg" loading="lazy" alt=""><p class="cap">Ilustración</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/ilus3.jpg" loading="lazy" alt=""><p class="cap">Ilustración</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/ilus4.jpg" loading="lazy" alt=""><p class="cap">Ilustración</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/ilus5.jpg" loading="lazy" alt=""><p class="cap">Ilustración</p></div>
+        <div class="float-item"><img class="lightbox-img" src="images/arte/ilus6.jpg" loading="lazy" alt=""><p class="cap">Ilustración</p></div>
+      </div>
+
+      <div class="icon-links">
+        <a href="https://www.instagram.com/j.wolfcat_art/" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 2c2.7 0 3 .01 4.1.06 1.1.05 1.8.22 2.5.47.7.27 1.2.6 1.8 1.15.55.55.9 1.1 1.15 1.8.25.7.42 1.4.47 2.5.05 1.1.06 1.4.06 4.1s-.01 3-.06 4.1c-.05 1.1-.22 1.8-.47 2.5a5 5 0 0 1-1.15 1.8 5 5 0 0 1-1.8 1.15c-.7.25-1.4.42-2.5.47-1.1.05-1.4.06-4.1.06s-3-.01-4.1-.06c-1.1-.05-1.8-.22-2.5-.47a5 5 0 0 1-1.8-1.15 5 5 0 0 1-1.15-1.8c-.25-.7-.42-1.4-.47-2.5C2.01 15 2 14.7 2 12s.01-3 .06-4.1c.05-1.1.22-1.8.47-2.5.27-.7.6-1.2 1.15-1.8.55-.55 1.1-.9 1.8-1.15.7-.25 1.4-.42 2.5-.47C9 2.01 9.3 2 12 2zm0 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6zm5.2-2.9a1.2 1.2 0 1 1 0 2.4 1.2 1.2 0 0 1 0-2.4z"/></svg>
+          <span class="tip">Instagram</span>
+        </a>
+        <a href="https://www.artstation.com/jwolfcat" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6.5 3.8 17.2 21H9.7L3.1 9.9c-.5-.9.1-2 1.1-2h2.3zM20.9 21H15L8.2 9.4h5.9L20.9 21z"/></svg>
+          <span class="tip">Artstation</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MUSICA -->
+  <section id="musica" class="op-section">
+    <div class="wrap">
+      <div class="section-title-row"><img src="images/inicio/musica.jpg" alt=""><h2 class="section-title">The Cat Wolfson Music Experience</h2></div>
+
+      <div class="spotify-embed" id="spotifyEmbed"></div>
+
+      <div class="float-gallery" style="margin-top:56px;">
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal1.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal2.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal3.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal4.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal5.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal6.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal7.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal8.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal9.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal10.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal11.jpg" loading="lazy" alt=""></div>
+        <div class="float-item"><img class="lightbox-img" src="images/musica/gal12.jpg" loading="lazy" alt=""></div>
+      </div>
+
+      <div class="icon-links" style="margin-top:48px;">
+        <a href="http://www.youtube.com/@CatWolfsonMusic" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M22 12s0-3.2-.4-4.7a2.9 2.9 0 0 0-2-2C17.9 5 12 5 12 5s-5.9 0-7.6.3a2.9 2.9 0 0 0-2 2C2 8.8 2 12 2 12s0 3.2.4 4.7a2.9 2.9 0 0 0 2 2C6.1 19 12 19 12 19s5.9 0 7.6-.3a2.9 2.9 0 0 0 2-2C22 15.2 22 12 22 12zM10 15.2V8.8L15.5 12z"/></svg>
+          <span class="tip">YouTube</span>
+        </a>
+        <a href="https://music.apple.com/es/artist/the-cat-wolfson-music-experience/1712242302" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 3v11.6a3 3 0 1 0 2 2.8V7.8l8-1.6v8.4a3 3 0 1 0 2 2.8V3l-12 2.4z"/></svg>
+          <span class="tip">Apple Music</span>
+        </a>
+      </div>
+      <p style="text-align:center; opacity:.7; font-size:.85rem; margin-top:16px;">También en Instagram y TikTok</p>
+    </div>
+  </section>
+
+  <!-- VIDEO / AUDIOVISUAL -->
+  <section id="video" class="op-section">
+    <div class="wrap">
+      <div class="section-title-row"><img src="images/inicio/video.jpg" alt=""><h2 class="section-title">0:45 Audiovisual</h2></div>
+
+      <div class="video-cloud">
+        <button class="video-chip" data-video="iKBYqO5xciI">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/iKBYqO5xciI/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 1</p>
+        </button>
+        <button class="video-chip" data-video="oJlanvvc7_o">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/oJlanvvc7_o/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 2</p>
+        </button>
+        <button class="video-chip" data-video="sJMyxXxX1mg">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/sJMyxXxX1mg/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 3</p>
+        </button>
+        <button class="video-chip" data-video="v8JUZXVEhZ0">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/v8JUZXVEhZ0/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 4</p>
+        </button>
+        <button class="video-chip" data-video="51PfCg-TcaE">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/51PfCg-TcaE/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 5</p>
+        </button>
+        <button class="video-chip" data-video="2QwxAf7lfWI">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/2QwxAf7lfWI/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 6</p>
+        </button>
+        <button class="video-chip" data-video="pfUFNCACf_A">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/pfUFNCACf_A/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 7</p>
+        </button>
+        <button class="video-chip" data-video="i_RwBV_ze9E">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/i_RwBV_ze9E/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 8</p>
+        </button>
+        <button class="video-chip" data-video="mvEj2Avdtps">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/mvEj2Avdtps/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 9</p>
+        </button>
+        <button class="video-chip" data-video="fPTs2g8lP1I">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/fPTs2g8lP1I/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 10</p>
+        </button>
+        <button class="video-chip" data-video="61ACqG6zf-w">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/61ACqG6zf-w/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 11</p>
+        </button>
+        <button class="video-chip" data-video="zE0dV_gJM4c">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/zE0dV_gJM4c/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Vídeo 12</p>
+        </button>
+      </div>
+
+      <div class="icon-links">
+        <a href="http://www.youtube.com/@j.wolfcat" target="_blank" rel="noopener">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M22 12s0-3.2-.4-4.7a2.9 2.9 0 0 0-2-2C17.9 5 12 5 12 5s-5.9 0-7.6.3a2.9 2.9 0 0 0-2 2C2 8.8 2 12 2 12s0 3.2.4 4.7a2.9 2.9 0 0 0 2 2C6.1 19 12 19 12 19s5.9 0 7.6-.3a2.9 2.9 0 0 0 2-2C22 15.2 22 12 22 12zM10 15.2V8.8L15.5 12z"/></svg>
+          <span class="tip">YouTube</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- VOZ / LOCUCION -->
+  <section id="voz" class="op-section">
+    <div class="wrap">
+      <div class="section-title-row"><img src="images/inicio/voz.jpg" alt=""><h2 class="section-title">Locución y Doblaje</h2></div>
+
+      <div class="video-cloud">
+        <button class="video-chip" data-video="60mPrSkqeZU">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/60mPrSkqeZU/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Demo reel 1</p>
+        </button>
+        <button class="video-chip" data-video="SIYJa6QwGB8">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/SIYJa6QwGB8/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Demo reel 2</p>
+        </button>
+        <button class="video-chip" data-video="UafZnwIKe9Y">
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/UafZnwIKe9Y/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Demo reel 3</p>
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Cerrar">&times;</button>
+  <div class="lightbox-inner" id="lightboxInner"></div>
+</div>
+
+<script src="js/app.js"></script>
+<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+</body>
+</html>
