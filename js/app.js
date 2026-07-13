@@ -105,7 +105,6 @@ document.querySelectorAll('.video-chip').forEach(btn => {
 });
 
 document.querySelectorAll('.lightbox-img').forEach(img => {
-  img.closest('.float-item').style.cursor = 'zoom-in';
   img.closest('.float-item').addEventListener('click', () => openImageLightbox(img.getAttribute('src')));
 });
 
@@ -130,6 +129,34 @@ window.onSpotifyIframeApiReady = (IFrameAPI) => {
     });
   });
 };
+
+// Spotify a veces fuerza un scrollIntoView de su iframe al cambiar de pista;
+// si detectamos un salto de scroll no iniciado por el usuario hacia el iframe, lo revertimos.
+let userIsScrolling = false;
+let userScrollTimeout;
+window.addEventListener('wheel', () => {
+  userIsScrolling = true;
+  clearTimeout(userScrollTimeout);
+  userScrollTimeout = setTimeout(() => userIsScrolling = false, 600);
+}, { passive: true });
+window.addEventListener('touchmove', () => {
+  userIsScrolling = true;
+  clearTimeout(userScrollTimeout);
+  userScrollTimeout = setTimeout(() => userIsScrolling = false, 600);
+}, { passive: true });
+
+let lastKnownScroll = window.scrollY;
+window.addEventListener('scroll', () => {
+  const spotifyEmbedEl = document.getElementById('spotifyEmbed');
+  if (!spotifyEmbedEl) { lastKnownScroll = window.scrollY; return; }
+  const rect = spotifyEmbedEl.getBoundingClientRect();
+  const jumpedToPlayer = Math.abs(rect.top) < 4 || (rect.top >= 0 && rect.top < window.innerHeight * 0.15 && Math.abs(window.scrollY - lastKnownScroll) > 200);
+  if (!userIsScrolling && jumpedToPlayer && Math.abs(window.scrollY - lastKnownScroll) > 150) {
+    window.scrollTo(0, lastKnownScroll);
+  } else {
+    lastKnownScroll = window.scrollY;
+  }
+}, { passive: true });
 
 if (spotifyMiniBtn) {
   spotifyMiniBtn.addEventListener('click', () => {

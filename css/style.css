@@ -318,16 +318,59 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
 .float-item:nth-child(odd)  { margin-top: 26px; }
 .float-item:nth-child(3n)   { margin-top: -14px; }
 
-.float-item img {
-  width: 100%;
+.thumb-wrap {
+  position: relative;
   border-radius: 16px;
+  overflow: hidden;
   box-shadow: 0 14px 30px rgba(19,18,17,0.14);
   transition: transform .3s ease, box-shadow .3s ease;
 }
 
-.float-item:hover img {
+.thumb-wrap.ratio-43 { aspect-ratio: 4 / 3; }
+
+.thumb-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.float-item:hover .thumb-wrap {
   transform: scale(1.04) rotate(-0.5deg);
   box-shadow: 0 20px 40px rgba(19,18,17,0.22);
+}
+
+/* Lupa de zoom: lupa negra sobre círculo amarillo, centrada, visible al hover */
+.zoom-badge {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .2s ease;
+}
+
+.thumb-wrap:hover .zoom-badge { opacity: 1; }
+
+.zoom-badge .circle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(19,18,17,0.3);
+}
+
+.zoom-badge svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.4;
+  stroke-linecap: round;
 }
 
 .float-item .cap {
