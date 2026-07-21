@@ -1,16 +1,3 @@
-// ===== Logo de inicio: tan ancho como el nombre, con margen seguro =====
-function syncLogoWidth() {
-  const name = document.getElementById('heroName');
-  const logo = document.getElementById('heroLogo');
-  if (!name || !logo) return;
-  const w = name.getBoundingClientRect().width;
-  if (w > 0) logo.style.width = w + 'px';
-}
-window.addEventListener('load', syncLogoWidth);
-window.addEventListener('resize', syncLogoWidth);
-document.fonts && document.fonts.ready.then(syncLogoWidth);
-syncLogoWidth();
-
 // ===== Smooth scroll con easing propio para todos los enlaces internos =====
 function smoothScrollTo(targetY, duration = 700) {
   const startY = window.scrollY;
@@ -39,10 +26,28 @@ document.addEventListener('click', (e) => {
 
 // ===== Nav flotante: aparece al salir de "inicio", indicador de sección activa =====
 const floatNav = document.getElementById('floatNav');
+const floatNavText = document.getElementById('floatNavText');
 const inicio = document.getElementById('inicio');
 const navLinks = document.querySelectorAll('.nav-icons a');
+const allFloatLinks = document.querySelectorAll('.nav-home, .nav-icons a');
 const sectionMap = {};
 navLinks.forEach(a => sectionMap[a.getAttribute('href').slice(1)] = a);
+
+function updateFloatNavText() {
+  if (!floatNavText) return;
+  const hoveredLink = document.querySelector('.nav-home:hover, .nav-icons a:hover');
+  if (hoveredLink) {
+    floatNavText.textContent = hoveredLink.getAttribute('data-tip') || '';
+    floatNavText.classList.add('visible');
+  } else {
+    floatNavText.classList.remove('visible');
+  }
+}
+
+allFloatLinks.forEach(link => {
+  link.addEventListener('mouseenter', updateFloatNavText);
+  link.addEventListener('mouseleave', updateFloatNavText);
+});
 
 const heroObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
@@ -59,6 +64,7 @@ const sectionObserver = new IntersectionObserver((entries) => {
     if (entry.isIntersecting) {
       navLinks.forEach(a => a.classList.remove('active'));
       link.classList.add('active');
+      updateFloatNavText();
     }
   });
 }, { rootMargin: '-40% 0px -50% 0px' });
@@ -70,7 +76,7 @@ function parallax() {
   floatItems.forEach((el, i) => {
     const rect = el.getBoundingClientRect();
     const center = rect.top + rect.height / 2 - window.innerHeight / 2;
-    const speed = (i % 3 === 0) ? 0.05 : (i % 3 === 1 ? -0.04 : 0.03);
+    const speed = (i % 3 === 0) ? 0.01 : (i % 3 === 1 ? -0.008 : 0.006);
     el.style.transform = `translateY(${center * speed}px)`;
   });
   requestAnimationFrame(parallax);
