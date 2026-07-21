@@ -13,13 +13,16 @@
 <!-- Reproductor mini flotante (solo visible cuando se reproduce música) -->
 <!-- Nav flotante -->
 <nav class="float-nav" id="floatNav" aria-label="Navegación de secciones">
-  <a class="nav-home" href="#inicio"><img src="images/logo.jpg" alt="Inicio"></a>
-  <div class="nav-icons">
-    <a href="#arte"><img src="images/inicio/ilustracion.jpg" alt="Arte"><span class="tip">J.Wolfcat ART</span><span class="dot"></span></a>
-    <a href="#musica"><img src="images/inicio/musica.jpg" alt="Música"><span class="tip">The Cat Wolfson Music Experience</span><span class="dot"></span></a>
-    <a href="#video"><img src="images/inicio/video.jpg" alt="Video"><span class="tip">0:45 Audiovisual</span><span class="dot"></span></a>
-    <a href="#voz"><img src="images/inicio/voz.jpg" alt="Voz"><span class="tip">Locución y Doblaje</span><span class="dot"></span></a>
+  <div class="float-nav-row">
+    <a class="nav-home" href="#inicio" data-tip="Inicio"><img src="images/logo.jpg" alt="Inicio"></a>
+    <div class="nav-icons">
+      <a href="#arte" data-tip="J.Wolfcat ART"><img src="images/inicio/ilustracion.jpg" alt="Arte"><span class="dot"></span></a>
+      <a href="#musica" data-tip="The Cat Wolfson Music Experience"><img src="images/inicio/musica.jpg" alt="Música"><span class="dot"></span></a>
+      <a href="#video" data-tip="0:45 Audiovisual"><img src="images/inicio/video.jpg" alt="Video"><span class="dot"></span></a>
+      <a href="#voz" data-tip="Locución y Doblaje"><img src="images/inicio/voz.jpg" alt="Voz"><span class="dot"></span></a>
+    </div>
   </div>
+  <div class="float-nav-text" id="floatNavText"></div>
 </nav>
 
 <!-- Mini reproductor de Spotify: solo visible mientras suena música -->
@@ -60,10 +63,10 @@
     </div>
 
     <nav class="hero-nav">
-      <a href="#arte"><img src="images/inicio/ilustracion.jpg" alt="">J.Wolfcat ART</a>
-      <a href="#musica"><img src="images/inicio/musica.jpg" alt="">The Cat Wolfson Music Experience</a>
-      <a href="#video"><img src="images/inicio/video.jpg" alt="">0:45 Audiovisual</a>
-      <a href="#voz"><img src="images/inicio/voz.jpg" alt="">Locución y Doblaje</a>
+      <a href="#arte"><img src="images/inicio/ilustracion.jpg" alt=""><span class="nav-text">J.Wolfcat ART</span></a>
+      <a href="#musica"><img src="images/inicio/musica.jpg" alt=""><span class="nav-text">The Cat Wolfson Music Experience</span></a>
+      <a href="#video"><img src="images/inicio/video.jpg" alt=""><span class="nav-text">0:45 Audiovisual</span></a>
+      <a href="#voz"><img src="images/inicio/voz.jpg" alt=""><span class="nav-text">Locución y Doblaje</span></a>
     </nav>
   </section>
 
