@@ -36,18 +36,20 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
   position: fixed;
   top: 16px;
   left: 50%;
-  transform: translateX(-50%) translateY(-90px);
+  transform: translateX(-50%) translateY(-110px);
   z-index: 60;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  background: rgba(231,229,215,0.9);
+  background: rgba(231,229,215,0.92);
   backdrop-filter: blur(10px);
-  border-radius: 999px;
-  padding: 8px 10px;
-  box-shadow: 0 8px 24px rgba(19,18,17,0.12);
+  border-radius: 20px;
+  padding: 8px 12px;
+  box-shadow: 0 10px 30px rgba(19,18,17,0.15);
   opacity: 0;
   transition: transform .35s ease, opacity .35s ease;
+  width: auto;
+  max-width: 95vw;
 }
 
 .float-nav.visible {
@@ -55,18 +57,28 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
   opacity: 1;
 }
 
+.float-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
 .float-nav .nav-home {
   display: flex;
   align-items: center;
-  margin-right: 22px;
-  padding-right: 22px;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   position: relative;
+  flex-shrink: 0;
+  margin-right: 16px;
 }
 
 .float-nav .nav-home::after {
   content: "";
   position: absolute;
-  right: 0;
+  right: -8px;
   top: 50%;
   transform: translateY(-50%);
   width: 1px;
@@ -79,21 +91,24 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .nav-icons {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
 }
 
 .nav-icons a {
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 40px;
   height: 40px;
-  border-radius: 999px;
-  padding: 0 4px;
   position: relative;
+  flex-shrink: 0;
+  border-radius: 50%;
 }
 
 .nav-icons a img {
@@ -104,20 +119,31 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
   flex-shrink: 0;
 }
 
-.nav-icons a .tip {
-  max-width: 0;
-  overflow: hidden;
+.float-nav-text {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0;
+  height: 0;
+  line-height: 14px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.3s ease, transform 0.3s ease, height 0.3s ease, margin-top 0.3s ease;
+  pointer-events: none;
+  width: 100%;
   white-space: nowrap;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-left: 0;
-  transition: max-width .28s ease, margin-left .28s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.nav-icons a:hover .tip,
-.nav-icons a:focus-visible .tip {
-  max-width: 220px;
-  margin-left: 10px;
+.float-nav-text.visible {
+  opacity: 0.8;
+  transform: translateY(0);
+  height: 14px;
+  margin-top: 4px;
 }
 
 .nav-icons a .dot {
@@ -156,9 +182,9 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
 }
 
 .hero-top img.logo-big {
-  width: 260px;
-  max-width: 72vw;
-  height: auto;
+  width: 100%;
+  max-width: 100%;
+  height: 260px;
   object-fit: contain;
 }
 
@@ -173,29 +199,59 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 14px;
-  max-width: 720px;
-  margin: 0 auto;
+  gap: 32px;
+  max-width: 800px;
+  margin: 40px auto 0;
 }
 
 .hero-nav a {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  background: rgba(19,18,17,0.04);
-  border-radius: 999px;
-  padding: 10px 20px 10px 10px;
-  font-weight: 600;
-  transition: background .2s ease, transform .2s ease;
+  text-align: center;
+  position: relative;
+  width: 130px;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  transition: transform 0.3s ease;
 }
 
-.hero-nav a:hover { background: var(--accent); transform: translateY(-2px); }
-
 .hero-nav a img {
-  width: 44px;
-  height: 44px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   object-fit: cover;
+  box-shadow: 0 4px 12px rgba(19,18,17,0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  border: 3px solid transparent;
+}
+
+.hero-nav a .nav-text {
+  display: block;
+  margin-top: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.hero-nav a:hover {
+  transform: translateY(-4px);
+}
+
+.hero-nav a:hover img {
+  box-shadow: 0 8px 20px rgba(19,18,17,0.22);
+  border-color: var(--accent);
+}
+
+.hero-nav a:hover .nav-text {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* small "support" strip, moved lower */
@@ -659,10 +715,86 @@ footer a:hover { color: var(--accent); }
 }
 
 @media (max-width: 640px) {
-  .float-nav { padding: 6px 8px; gap: 2px; }
-  .float-nav .nav-home { margin-right: 12px; padding-right: 12px; }
-  .float-nav .nav-home img { width: 34px; height: 34px; }
-  .nav-icons a img { width: 34px; height: 34px; }
+  .float-nav {
+    padding: 6px 8px;
+    max-width: 95vw;
+    box-sizing: border-box;
+  }
+  .float-nav .nav-home {
+    width: 34px;
+    height: 34px;
+    margin-right: 12px;
+  }
+  .float-nav .nav-home::after {
+    right: -6px;
+    height: 20px;
+  }
+  .float-nav .nav-home img {
+    width: 34px;
+    height: 34px;
+  }
+  .nav-icons {
+    gap: 4px;
+  }
+  .nav-icons a {
+    width: 34px;
+    height: 34px;
+  }
+  .nav-icons a img {
+    width: 34px;
+    height: 34px;
+  }
+  .float-nav-text {
+    font-size: 0.68rem;
+    margin-top: 0;
+    height: 0;
+    line-height: 12px;
+  }
+  .float-nav-text.visible {
+    margin-top: 3px;
+    height: 12px;
+  }
   .music-covers img { width: 100px; }
   .float-item { width: 44%; }
+}
+
+@media (max-width: 400px) {
+  .float-nav {
+    padding: 4px 6px;
+    max-width: 95vw;
+  }
+  .float-nav .nav-home {
+    width: 28px;
+    height: 28px;
+    margin-right: 8px;
+  }
+  .float-nav .nav-home::after {
+    right: -4px;
+    height: 16px;
+  }
+  .float-nav .nav-home img {
+    width: 28px;
+    height: 28px;
+  }
+  .nav-icons {
+    gap: 3px;
+  }
+  .nav-icons a {
+    width: 28px;
+    height: 28px;
+  }
+  .nav-icons a img {
+    width: 28px;
+    height: 28px;
+  }
+  .float-nav-text {
+    font-size: 0.62rem;
+    margin-top: 0;
+    height: 0;
+    line-height: 11px;
+  }
+  .float-nav-text.visible {
+    margin-top: 2px;
+    height: 11px;
+  }
 }
