@@ -70,53 +70,285 @@ const sectionObserver = new IntersectionObserver((entries) => {
 }, { rootMargin: '-40% 0px -50% 0px' });
 sections.forEach(s => sectionObserver.observe(s));
 
-// ===== Parallax suave para las galerías flotantes (arte y música) =====
-const floatItems = document.querySelectorAll('.float-item');
-function parallax() {
-  floatItems.forEach((el, i) => {
-    const rect = el.getBoundingClientRect();
-    const center = rect.top + rect.height / 2 - window.innerHeight / 2;
-    const speed = (i % 3 === 0) ? 0.01 : (i % 3 === 1 ? -0.008 : 0.006);
-    el.style.transform = `translateY(${center * speed}px)`;
-  });
-  requestAnimationFrame(parallax);
-}
-if (floatItems.length) requestAnimationFrame(parallax);
-
 // ===== Lightbox: vídeos (audiovisual y voz) e imágenes (arte y música) =====
 const lightbox = document.getElementById('lightbox');
 const lightboxInner = document.getElementById('lightboxInner');
+const lightboxDescToggle = document.getElementById('lightboxDescToggle');
+const lightboxDescDrawer = document.getElementById('lightboxDescDrawer');
+const lightboxDescTitle = document.getElementById('lightboxDescTitle');
+const lightboxDescText = document.getElementById('lightboxDescText');
+const lightboxDescCategory = document.getElementById('lightboxDescCategory');
+const lightboxDescClose = document.getElementById('lightboxDescClose');
+const lightboxDescHideBtn = document.getElementById('lightboxDescHideBtn');
+const lightboxNavWrap = document.getElementById('lightboxNavWrap');
+const lightboxNavCluster = document.getElementById('lightboxNavCluster');
+const lightboxNavPrev = document.getElementById('lightboxNavPrev');
+const lightboxNavNext = document.getElementById('lightboxNavNext');
+
+let currentGalleryItems = [];
+let currentImageIndex = -1;
+let navPeekTimer = null;
+
+function toggleDescriptionDrawer(forceOpen) {
+  if (!lightboxDescDrawer) return;
+  const willOpen = (typeof forceOpen === 'boolean')
+    ? forceOpen
+    : !lightboxDescDrawer.classList.contains('open');
+
+  if (willOpen) {
+    lightboxDescDrawer.classList.add('open');
+    lightboxDescDrawer.setAttribute('aria-hidden', 'false');
+    if (lightbox) lightbox.classList.add('desc-open');
+    if (lightboxDescToggle) lightboxDescToggle.classList.add('active');
+  } else {
+    lightboxDescDrawer.classList.remove('open');
+    lightboxDescDrawer.setAttribute('aria-hidden', 'true');
+    if (lightbox) lightbox.classList.remove('desc-open');
+    if (lightboxDescToggle) lightboxDescToggle.classList.remove('active');
+  }
+}
+
+function updateImageDisplay() {
+  if (currentImageIndex < 0 || currentImageIndex >= currentGalleryItems.length) return;
+  const item = currentGalleryItems[currentImageIndex];
+  const imgEl = item.querySelector('.lightbox-img');
+  if (!imgEl) return;
+
+  const src = imgEl.getAttribute('src');
+  const title = item.dataset.title || item.querySelector('.cap')?.textContent.trim() || 'Obra';
+  const desc = item.dataset.description || '';
+  const section = item.closest('section');
+  const category = (section && section.id === 'musica') ? 'Música' : 'Arte';
+
+  // Actualiza la imagen en el visor
+  lightboxInner.innerHTML = `<img src="${src}" alt="${title}">`;
+
+  // Actualiza los textos del panel de descripción
+  if (lightboxDescTitle) lightboxDescTitle.textContent = title;
+  if (lightboxDescText) lightboxDescText.textContent = desc || 'Obra visual de Julio Panojo.';
+  if (lightboxDescCategory) lightboxDescCategory.textContent = category;
+}
+
+function navigateLightbox(dir) {
+  if (!currentGalleryItems.length) return;
+  currentImageIndex = (currentImageIndex + dir + currentGalleryItems.length) % currentGalleryItems.length;
+  updateImageDisplay();
+}
 
 function openVideoLightbox(id) {
+  if (!lightbox || !lightboxInner) return;
+  currentGalleryItems = [];
+  currentImageIndex = -1;
+  toggleDescriptionDrawer(false);
+  if (lightboxDescToggle) lightboxDescToggle.style.display = 'none';
+  if (lightboxNavWrap) lightboxNavWrap.style.display = 'none';
+
   lightbox.classList.remove('img-mode');
   lightboxInner.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
   lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
-function openImageLightbox(src) {
+function openImageLightboxFromItem(floatItem) {
+  if (!lightbox || !lightboxInner) return;
+
+  // Colección de imágenes del contexto actual (categoría activa)
+  const gallery = floatItem.closest('.float-gallery') || floatItem.closest('section');
+  if (gallery) {
+    currentGalleryItems = Array.from(gallery.querySelectorAll('.float-item'));
+  } else {
+    currentGalleryItems = Array.from(document.querySelectorAll('.float-item'));
+  }
+
+  currentImageIndex = currentGalleryItems.indexOf(floatItem);
+  if (currentImageIndex === -1) currentImageIndex = 0;
+
+  // Requisito: Oculta por defecto
+  toggleDescriptionDrawer(false);
+
+  if (lightboxDescToggle) {
+    lightboxDescToggle.style.display = 'inline-flex';
+    lightboxDescToggle.classList.remove('active');
+  }
+
+  // Muestra los botones de navegación si hay más de una imagen
+  if (lightboxNavWrap) {
+    lightboxNavWrap.style.display = (currentGalleryItems.length > 1) ? 'flex' : 'none';
+    lightboxNavWrap.classList.remove('mouse-near');
+
+    // Muestra sutilmente al abrir durante 1.6s y luego se oculta automáticamente
+    // a menos que el usuario acerque o deslice el ratón sobre la zona
+    lightboxNavWrap.classList.add('mouse-near');
+    clearTimeout(navPeekTimer);
+    navPeekTimer = setTimeout(() => {
+      if (lightboxNavWrap) lightboxNavWrap.classList.remove('mouse-near');
+    }, 1600);
+  }
+
   lightbox.classList.add('img-mode');
-  lightboxInner.innerHTML = `<img src="${src}" alt="">`;
   lightbox.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  updateImageDisplay();
 }
 
 function closeLightbox() {
+  if (!lightbox) return;
+  toggleDescriptionDrawer(false);
+  clearTimeout(navPeekTimer);
+  if (lightboxNavWrap) {
+    lightboxNavWrap.style.display = 'none';
+    lightboxNavWrap.classList.remove('mouse-near');
+  }
   lightbox.classList.remove('open');
-  lightboxInner.innerHTML = '';
+  lightbox.classList.remove('img-mode');
+  lightbox.classList.remove('desc-open');
+  if (lightboxInner) lightboxInner.innerHTML = '';
+  document.body.style.overflow = '';
+  currentGalleryItems = [];
+  currentImageIndex = -1;
 }
 
-document.querySelectorAll('.video-chip').forEach(btn => {
-  btn.addEventListener('click', () => openVideoLightbox(btn.dataset.video));
+// Detección del ratón para mostrar/ocultar navegación en lightbox
+if (lightbox) {
+  lightbox.addEventListener('mousemove', (e) => {
+    if (!lightbox.classList.contains('open') || !lightbox.classList.contains('img-mode') || !lightboxNavWrap) return;
+    const distFromBottom = window.innerHeight - e.clientY;
+    // Si el ratón está en los últimos 95px de la pantalla, mostrar botones; de lo contrario ocultar
+    if (distFromBottom <= 95) {
+      lightboxNavWrap.classList.add('mouse-near');
+    } else {
+      lightboxNavWrap.classList.remove('mouse-near');
+    }
+  });
+
+  lightbox.addEventListener('mouseleave', () => {
+    if (lightboxNavWrap) lightboxNavWrap.classList.remove('mouse-near');
+  });
+}
+
+if (lightboxDescToggle) {
+  lightboxDescToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDescriptionDrawer();
+  });
+}
+
+if (lightboxDescClose) {
+  lightboxDescClose.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDescriptionDrawer(false);
+  });
+}
+
+if (lightboxDescHideBtn) {
+  lightboxDescHideBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDescriptionDrawer(false);
+  });
+}
+
+if (lightboxNavPrev) {
+  lightboxNavPrev.addEventListener('click', (e) => {
+    e.stopPropagation();
+    navigateLightbox(-1);
+  });
+}
+
+if (lightboxNavNext) {
+  lightboxNavNext.addEventListener('click', (e) => {
+    e.stopPropagation();
+    navigateLightbox(1);
+  });
+}
+
+// Delegated click listeners so dynamically added items immediately work
+document.addEventListener('click', (e) => {
+  const videoChip = e.target.closest('.video-chip');
+  if (videoChip && videoChip.dataset.video) {
+    e.preventDefault();
+    openVideoLightbox(videoChip.dataset.video);
+    return;
+  }
+
+  const floatItem = e.target.closest('.float-item');
+  if (floatItem) {
+    const img = floatItem.querySelector('.lightbox-img');
+    if (img) {
+      e.preventDefault();
+      openImageLightboxFromItem(floatItem);
+      return;
+    }
+  }
 });
 
-document.querySelectorAll('.lightbox-img').forEach(img => {
-  img.closest('.float-item').addEventListener('click', () => openImageLightbox(img.getAttribute('src')));
-});
+window.rebindPortfolioInteractions = function() {
+  // Delegación de eventos activa para cualquier nuevo elemento añadido dinámicamente
+};
 
-document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
-lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+const lightboxCloseBtn = document.getElementById('lightboxClose');
+if (lightboxCloseBtn) {
+  lightboxCloseBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLightbox();
+  });
+}
+
+if (lightbox) {
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox || e.target === lightboxInner) {
+      closeLightbox();
+    }
+  });
+}
+
+// Aplicar configuración de interfaz en vivo (ej. ocultar pie de página)
+window.applyPortfolioSettings = function(settings) {
+  const footerPill = document.getElementById('footerContactPill');
+  if (footerPill) {
+    if (settings && settings.hideFooter) {
+      footerPill.classList.add('hidden-footer');
+      footerPill.style.display = 'none';
+    } else {
+      footerPill.classList.remove('hidden-footer');
+      footerPill.style.display = '';
+    }
+  }
+};
+
+// Cargar configuración al iniciar
+try {
+  fetch('data/portfolio-content.json')
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.settings) {
+        window.applyPortfolioSettings(data.settings);
+      }
+    })
+    .catch(() => {});
+} catch (e) {}
+
+// Navegación con teclado: flechas izquierda/derecha y tecla Escape
+document.addEventListener('keydown', (e) => {
+  if (!lightbox || !lightbox.classList.contains('open')) return;
+
+  if (e.key === 'Escape') {
+    closeLightbox();
+    return;
+  }
+
+  if (lightbox.classList.contains('img-mode')) {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      navigateLightbox(-1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      navigateLightbox(1);
+    }
+  }
+});
 
 // ===== Spotify: embed vía iFrame API + mini-reproductor (solo visible reproduciendo) =====
 let spotifyController = null;

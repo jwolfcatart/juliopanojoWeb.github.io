@@ -1,0 +1,17 @@
+{
+  "name": "juliopanojo-web",
+  "version": "1.0.0",
+  "description": "Portafolio de Julio Panojo",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "echo 'No build step required'",
+    "lint": "echo 'No lint step required'",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "multer": "^2.4.0"
+  }
+}

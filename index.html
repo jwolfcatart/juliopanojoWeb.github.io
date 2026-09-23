@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Julio Panojo</title>
+<meta name="description" content="Portafolio personal y profesional de Julio Panojo - J.Wolfcat ART, The Cat Wolfson Music Experience, 0:45 Audiovisual, Locución y Doblaje.">
+<meta property="og:title" content="Julio Panojo">
+<meta property="og:description" content="Portafolio personal y profesional de Julio Panojo - J.Wolfcat ART, The Cat Wolfson Music Experience, 0:45 Audiovisual, Locución y Doblaje.">
 <link rel="icon" href="images/logo.jpg">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
 
@@ -14,12 +18,12 @@
 <!-- Nav flotante -->
 <nav class="float-nav" id="floatNav" aria-label="Navegación de secciones">
   <div class="float-nav-row">
-    <a class="nav-home" href="#inicio" data-tip="Inicio"><img src="images/logo.jpg" alt="Inicio"></a>
+    <a class="nav-home" href="#inicio" data-tip="Inicio"><img data-logo="banner" src="images/inicio/julio.jpg" alt="Inicio"></a>
     <div class="nav-icons">
-      <a href="#arte" data-tip="J.Wolfcat ART"><img src="images/inicio/ilustracion.jpg" alt="Arte"><span class="dot"></span></a>
-      <a href="#musica" data-tip="The Cat Wolfson Music Experience"><img src="images/inicio/musica.jpg" alt="Música"><span class="dot"></span></a>
-      <a href="#video" data-tip="0:45 Audiovisual"><img src="images/inicio/video.jpg" alt="Video"><span class="dot"></span></a>
-      <a href="#voz" data-tip="Locución y Doblaje"><img src="images/inicio/voz.jpg" alt="Voz"><span class="dot"></span></a>
+      <a href="#arte" data-tip="J.Wolfcat ART"><img data-logo="arte" src="images/inicio/_J_Wolfcat__1790196190168_9892.png" alt="Arte"><span class="dot"></span></a>
+      <a href="#musica" data-tip="The Cat Wolfson Music Experience"><img data-logo="musica" src="images/inicio/musica.jpg" alt="Música"><span class="dot"></span></a>
+      <a href="#video" data-tip="0:45 Audiovisual"><img data-logo="video" src="images/inicio/video.jpg" alt="Video"><span class="dot"></span></a>
+      <a href="#voz" data-tip="Locución y Doblaje"><img data-logo="voz" src="images/inicio/voz.jpg" alt="Voz"><span class="dot"></span></a>
     </div>
   </div>
   <div class="float-nav-text" id="floatNavText"></div>
@@ -33,23 +37,19 @@
   <div class="vu-bars"><span></span><span></span><span></span><span></span></div>
 </div>
 
-<!-- Píldora de contacto, fija en la parte inferior -->
-<div class="contact-pill">
-  <a href="https://ko-fi.com/wolfcatart" target="_blank" rel="noopener">
-    <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h14v2h1a4 4 0 0 1 0 8h-1.2A6 6 0 0 1 12 18H8a6 6 0 0 1-5-5.9V3zm14 4v4h1a2 2 0 0 0 0-4h-1z"/></svg>
-    Ko-fi
+<!-- Píldora de pie de página flotante con enlaces (solo logos) -->
+<div class="contact-pill" id="footerContactPill">
+  <a href="https://ko-fi.com/wolfcatart" target="_blank" rel="noopener" title="Ko-fi" aria-label="Ko-fi">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h14v2h1a4 4 0 0 1 0 8h-1.2A6 6 0 0 1 12 18H8a6 6 0 0 1-5-5.9V3zm14 4v4h1a2 2 0 0 0 0-4h-1z"/></svg><span class="pill-label">Ko-fi</span>
   </a>
-  <a href="https://www.patreon.com/cw/wolfcatart" target="_blank" rel="noopener">
-    <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h3v18H3zM14 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14z"/></svg>
-    Patreon
+  <a href="https://www.patreon.com/cw/wolfcatart" target="_blank" rel="noopener" title="Patreon" aria-label="Patreon">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M3 3h3v18H3zM14 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14z"/></svg><span class="pill-label">Patreon</span>
   </a>
-  <a href="mailto:julio.panojo@gmail.com">
-    <svg class="icon" viewBox="0 0 24 24"><path d="M2 5h20v14H2V5zm2 2v.01L12 13l8-5.99V7l-8 6-8-6zm0 2.5V17h16V9.5l-8 6-8-6z"/></svg>
-    Email
+  <a href="mailto:julio.panojo@gmail.com" title="Email" aria-label="Email">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M2 5h20v14H2V5zm2 2v.01L12 13l8-5.99V7l-8 6-8-6zm0 2.5V17h16V9.5l-8 6-8-6z"/></svg><span class="pill-label">Email</span>
   </a>
-  <a href="https://www.linkedin.com/in/juliopanojo" target="_blank" rel="noopener">
-    <svg class="icon" viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zm7 0h3.8v1.7h.05c.53-.95 1.83-1.95 3.77-1.95 4.03 0 4.78 2.5 4.78 5.76V21h-4v-5.7c0-1.36-.02-3.1-1.9-3.1-1.9 0-2.2 1.47-2.2 3v5.8h-4z"/></svg>
-    LinkedIn
+  <a href="https://www.linkedin.com/in/juliopanojo" target="_blank" rel="noopener" title="LinkedIn" aria-label="LinkedIn">
+    <svg class="icon" viewBox="0 0 24 24"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zm7 0h3.8v1.7h.05c.53-.95 1.83-1.95 3.77-1.95 4.03 0 4.78 2.5 4.78 5.76V21h-4v-5.7c0-1.36-.02-3.1-1.9-3.1-1.9 0-2.2 1.47-2.2 3v5.8h-4z"/></svg><span class="pill-label">LinkedIn</span>
   </a>
 </div>
 
@@ -58,36 +58,39 @@
   <!-- INICIO -->
   <section id="inicio" class="op-section hero" style="padding-top:40px;">
     <div class="hero-top">
-      <img class="logo-big" id="heroLogo" src="images/inicio/julio.jpg" alt="Julio Panojo">
+      <img class="logo-big" id="heroLogo" data-logo="banner" src="images/inicio/julio.jpg" alt="Julio Panojo">
       <h1 id="heroName">Julio Panojo</h1>
     </div>
 
     <nav class="hero-nav">
-      <a href="#arte"><img src="images/inicio/ilustracion.jpg" alt=""><span class="nav-text">J.Wolfcat ART</span></a>
-      <a href="#musica"><img src="images/inicio/musica.jpg" alt=""><span class="nav-text">The Cat Wolfson Music Experience</span></a>
-      <a href="#video"><img src="images/inicio/video.jpg" alt=""><span class="nav-text">0:45 Audiovisual</span></a>
-      <a href="#voz"><img src="images/inicio/voz.jpg" alt=""><span class="nav-text">Locución y Doblaje</span></a>
+      <a href="#arte"><img data-logo="arte" src="images/inicio/_J_Wolfcat__1790196190168_9892.png" alt=""><span class="nav-text">J.Wolfcat ART</span></a>
+      <a href="#musica"><img data-logo="musica" src="images/inicio/musica.jpg" alt=""><span class="nav-text">The Cat Wolfson Music Experience</span></a>
+      <a href="#video"><img data-logo="video" src="images/inicio/video.jpg" alt=""><span class="nav-text">0:45 Audiovisual</span></a>
+      <a href="#voz"><img data-logo="voz" src="images/inicio/voz.jpg" alt=""><span class="nav-text">Locución y Doblaje</span></a>
     </nav>
   </section>
 
   <!-- ARTE -->
   <section id="arte" class="op-section">
     <div class="wrap">
-      <div class="section-title-row"><img src="images/inicio/ilustracion.jpg" alt=""><h2 class="section-title">J.Wolfcat ART</h2></div>
+      <div class="section-title-row"><img data-logo="arte" src="images/inicio/_J_Wolfcat__1790196190168_9892.png" alt="J.Wolfcat ART"><h2 class="section-title">J.Wolfcat ART</h2></div>
 
-      <div class="float-gallery">
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/3d1.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Arte 3D</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/3d2.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Arte 3D</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/3d3.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Arte 3D</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/3d4.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Arte 3D</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/3d5.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Arte 3D</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/3d6.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Arte 3D</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/ilus1.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/ilus2.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/ilus3.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/ilus4.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/ilus5.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
-        <div class="float-item"><div class="thumb-wrap ratio-43"><img class="lightbox-img" src="images/arte/ilus6.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
+      <div class="float-gallery" id="galleryArte">
+        <!-- ARTE_GALLERY_START -->
+        <div class="float-item" data-title="Donut" data-description="Modelado 3D y render fotorrealista con glaseado y chispas de color, explorando propiedades de refracción, subsurface scattering e iluminación de estudio."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/3d1.jpg" loading="lazy" alt="Donut"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Donut</p></div>
+        <div class="float-item" data-title="Portal Espacial" data-description="Composición tridimensional de ciencia ficción con vórtice interdimensional, anillos concéntricos y partículas de energía lumínica."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/3d2.jpg" loading="lazy" alt="Portal Espacial"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Portal Espacial</p></div>
+        <div class="float-item" data-title="Orbe Arcano" data-description="Modelado 3D conceptual con geometrías concéntricas, materiales emisivos y destellos volumétricos de inspiración mística."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/3d3.jpg" loading="lazy" alt="Orbe Arcano"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Orbe Arcano</p></div>
+        <div class="float-item" data-title="Arte 3D" data-description="Diseño de personaje 3D y exploración de formas mecánicas y orgánicas con iluminación dramática y texturas PBR."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/3d4.jpg" loading="lazy" alt="Arte 3D"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Arte 3D</p></div>
+        <div class="float-item" data-title="Arte 3D" data-description="Render conceptual con acabado estilizado, enfocado en contrastes de sombras, atmósfera cinematográfica y profundidad de campo."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/3d5.jpg" loading="lazy" alt="Arte 3D"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Arte 3D</p></div>
+        <div class="float-item" data-title="Arte 3D" data-description="Modelado y texturizado de superficie compleja, con mapeado de relieve, reflejos metálicos y detalle anatómico estilizado."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/3d6.jpg" loading="lazy" alt="Arte 3D"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Arte 3D</p></div>
+        <div class="float-item" data-title="Ilustración" data-description="Ilustración digital original con paleta cálida, trazos dinámicos y narrativa gráfica inspirada en la fantasía épica."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/ilus1.jpg" loading="lazy" alt="Ilustración"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
+        <div class="float-item" data-title="Ilustración" data-description="Concept art de figura con marcado contraste claroscuro, pinceladas expresivas y atmósfera onírica."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/ilus2.jpg" loading="lazy" alt="Ilustración"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
+        <div class="float-item" data-title="Ilustración" data-description="Pintura digital de estilo editorial con rica armonía de colores, sombras graduadas y simbolismo visual."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/ilus3.jpg" loading="lazy" alt="Ilustración"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
+        <div class="float-item" data-title="Ilustración" data-description="Obra gráfica con diseño de personajes, detalle en vestuario y elementos compositivos de inspiración mitológica."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/ilus4.jpg" loading="lazy" alt="Ilustración"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
+        <div class="float-item" data-title="Ilustración" data-description="Diseño visual y portada conceptual con balance dinámico de formas, texturas pictóricas y estética retro-futurista."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/ilus5.jpg" loading="lazy" alt="Ilustración"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
+        <div class="float-item" data-title="Ilustración" data-description="Ilustración de gran carga expresiva, explorando texturas botánicas, líneas limpias y gradientes lumínicos."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/ilus6.jpg" loading="lazy" alt="Ilustración"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Ilustración</p></div>
+        <div class="float-item" data-title="Planetas gemelos" data-description="Obra espacial que explora la dualidad de mundos gemelos en órbita, atmósferas incandescentes y estética cósmica envolvente."><div class="thumb-wrap"><img class="lightbox-img" src="images/arte/IMG_4075_PNG_1790193762132_2820.png" loading="lazy" alt="Planetas gemelos"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">Planetas gemelos</p></div>
+        <!-- ARTE_GALLERY_END -->
       </div>
 
       <div class="icon-links">
@@ -106,23 +109,25 @@
   <!-- MUSICA -->
   <section id="musica" class="op-section">
     <div class="wrap">
-      <div class="section-title-row"><img src="images/inicio/musica.jpg" alt=""><h2 class="section-title">The Cat Wolfson Music Experience</h2></div>
+      <div class="section-title-row"><img data-logo="musica" src="images/inicio/musica.jpg" alt="The Cat Wolfson Music Experience"><h2 class="section-title">The Cat Wolfson Music Experience</h2></div>
 
       <div class="spotify-embed" id="spotifyEmbed"></div>
 
-      <div class="float-gallery" style="margin-top:56px;">
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal1.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal2.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal3.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal4.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal5.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal6.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal7.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal8.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal9.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal10.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal11.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
-        <div class="float-item"><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal12.jpg" loading="lazy" alt=""><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div></div>
+      <div class="float-gallery" id="galleryMusica" style="margin-top:56px;">
+        <!-- MUSICA_GALLERY_START -->
+        <div class="float-item" data-title="The Cat Wolfson #1" data-description="Fotografía conceptual y visuales de escena para directos y lanzamientos discográficos de The Cat Wolfson Music Experience."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal1.jpg" loading="lazy" alt="The Cat Wolfson #1"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #1</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #2" data-description="Arte gráfico promocional para sencillos de rock y fusión alternativa, fusionando atmósfera retro y moderna."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal2.jpg" loading="lazy" alt="The Cat Wolfson #2"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #2</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #3" data-description="Composición fotográfica para portadas digitales y plataformas de streaming como Spotify y Apple Music."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal3.jpg" loading="lazy" alt="The Cat Wolfson #3"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #3</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #4" data-description="Sesión de estudio y registro del proceso creativo durante la composición e instrumentación sonora."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal4.jpg" loading="lazy" alt="The Cat Wolfson #4"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #4</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #5" data-description="Identidad visual de la banda, combinando texturas lumínicas intensas con ambientación escénica inmersiva."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal5.jpg" loading="lazy" alt="The Cat Wolfson #5"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #5</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #6" data-description="Captura de interpretación en directo y atmósfera lumínica creada para espectáculos audiovisuales."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal6.jpg" loading="lazy" alt="The Cat Wolfson #6"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #6</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #7" data-description="Diseño de portada conceptual para álbumes de estudio, centrado en contrastes analógicos y texturas visuales."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal7.jpg" loading="lazy" alt="The Cat Wolfson #7"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #7</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #8" data-description="Fotografía artística de instrumentos y performance escénica en directo."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal8.jpg" loading="lazy" alt="The Cat Wolfson #8"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #8</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #9" data-description="Arte temático visual que acompaña las melodías y pasajes instrumentales experimentales."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal9.jpg" loading="lazy" alt="The Cat Wolfson #9"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #9</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #10" data-description="Experimentos cromáticos con iluminación de escenario, sombras y filtros fotográficos."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal10.jpg" loading="lazy" alt="The Cat Wolfson #10"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #10</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #11" data-description="Retrato y estética gráfica utilizada para cartelería oficial y promoción en redes sociales."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal11.jpg" loading="lazy" alt="The Cat Wolfson #11"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #11</p></div>
+        <div class="float-item" data-title="The Cat Wolfson #12" data-description="Visión global de puesta en escena e inmersión audiovisual de The Cat Wolfson Music Experience."><div class="thumb-wrap"><img class="lightbox-img" src="images/musica/gal12.jpg" loading="lazy" alt="The Cat Wolfson #12"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div><p class="cap">The Cat Wolfson #12</p></div>
+        <!-- MUSICA_GALLERY_END -->
       </div>
 
       <div class="icon-links" style="margin-top:48px;">
@@ -142,57 +147,59 @@
   <!-- VIDEO / AUDIOVISUAL -->
   <section id="video" class="op-section">
     <div class="wrap">
-      <div class="section-title-row"><img src="images/inicio/video.jpg" alt=""><h2 class="section-title">0:45 Audiovisual</h2></div>
+      <div class="section-title-row"><img data-logo="video" src="images/inicio/video.jpg" alt="0:45 Audiovisual"><h2 class="section-title">0:45 Audiovisual</h2></div>
 
-      <div class="video-cloud">
+      <div class="video-cloud" id="cloudVideo">
+        <!-- VIDEO_CLOUD_START -->
         <button class="video-chip" data-video="iKBYqO5xciI">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/iKBYqO5xciI/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 1</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/iKBYqO5xciI/hqdefault.jpg" loading="lazy" alt="Descubriendo a Emerson - Tráiler"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Descubriendo a Emerson - Tráiler</p>
         </button>
         <button class="video-chip" data-video="oJlanvvc7_o">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/oJlanvvc7_o/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 2</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/oJlanvvc7_o/hqdefault.jpg" loading="lazy" alt="Taburete - Roto y elegante (Videoclip Oficial)"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Taburete - Roto y elegante (Videoclip Oficial)</p>
         </button>
         <button class="video-chip" data-video="sJMyxXxX1mg">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/sJMyxXxX1mg/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 3</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/sJMyxXxX1mg/hqdefault.jpg" loading="lazy" alt="Pamiu - Re_edition"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Pamiu - Re_edition</p>
         </button>
         <button class="video-chip" data-video="v8JUZXVEhZ0">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/v8JUZXVEhZ0/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 4</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/v8JUZXVEhZ0/hqdefault.jpg" loading="lazy" alt="sommelier"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">sommelier</p>
         </button>
         <button class="video-chip" data-video="51PfCg-TcaE">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/51PfCg-TcaE/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 5</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/51PfCg-TcaE/hqdefault.jpg" loading="lazy" alt="Así no"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Así no</p>
         </button>
         <button class="video-chip" data-video="2QwxAf7lfWI">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/2QwxAf7lfWI/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 6</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/2QwxAf7lfWI/hqdefault.jpg" loading="lazy" alt="REEL 3D"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">REEL 3D</p>
         </button>
         <button class="video-chip" data-video="pfUFNCACf_A">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/pfUFNCACf_A/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 7</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/pfUFNCACf_A/hqdefault.jpg" loading="lazy" alt="Spot Requena y ¡Acción! 2019 - Aventuras en Requena: Tras la pantalla"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Spot Requena y ¡Acción! 2019 - Aventuras en Requena: Tras la pantalla</p>
         </button>
         <button class="video-chip" data-video="i_RwBV_ze9E">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/i_RwBV_ze9E/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 8</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/i_RwBV_ze9E/hqdefault.jpg" loading="lazy" alt="Spot Requena y ¡Acción! 2020"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Spot Requena y ¡Acción! 2020</p>
         </button>
         <button class="video-chip" data-video="mvEj2Avdtps">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/mvEj2Avdtps/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 9</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/mvEj2Avdtps/hqdefault.jpg" loading="lazy" alt="Julio Panojo REEL 2018"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Julio Panojo REEL 2018</p>
         </button>
         <button class="video-chip" data-video="fPTs2g8lP1I">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/fPTs2g8lP1I/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 10</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/fPTs2g8lP1I/hqdefault.jpg" loading="lazy" alt="PEPE SERÁ PAPÁ"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">PEPE SERÁ PAPÁ</p>
         </button>
         <button class="video-chip" data-video="61ACqG6zf-w">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/61ACqG6zf-w/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 11</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/61ACqG6zf-w/hqdefault.jpg" loading="lazy" alt="Jump Cat"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Jump Cat</p>
         </button>
         <button class="video-chip" data-video="zE0dV_gJM4c">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/zE0dV_gJM4c/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Vídeo 12</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/zE0dV_gJM4c/hqdefault.jpg" loading="lazy" alt="Practica montaje DOCUMENTAL Terror"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Practica montaje DOCUMENTAL Terror</p>
         </button>
+        <!-- VIDEO_CLOUD_END -->
       </div>
 
       <div class="icon-links">
@@ -207,21 +214,23 @@
   <!-- VOZ / LOCUCION -->
   <section id="voz" class="op-section">
     <div class="wrap">
-      <div class="section-title-row"><img src="images/inicio/voz.jpg" alt=""><h2 class="section-title">Locución y Doblaje</h2></div>
+      <div class="section-title-row"><img data-logo="voz" src="images/inicio/voz.jpg" alt="Locución y Doblaje"><h2 class="section-title">Locución y Doblaje</h2></div>
 
-      <div class="video-cloud">
+      <div class="video-cloud" id="cloudVoz">
+        <!-- VOZ_CLOUD_START -->
         <button class="video-chip" data-video="60mPrSkqeZU">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/60mPrSkqeZU/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Demo reel 1</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/60mPrSkqeZU/hqdefault.jpg" loading="lazy" alt="Take test Lobezno"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Take test Lobezno</p>
         </button>
         <button class="video-chip" data-video="SIYJa6QwGB8">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/SIYJa6QwGB8/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Demo reel 2</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/SIYJa6QwGB8/hqdefault.jpg" loading="lazy" alt="Demo reel Doblaje JULIO PANOJO"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Demo reel Doblaje JULIO PANOJO</p>
         </button>
         <button class="video-chip" data-video="UafZnwIKe9Y">
-          <div class="video-thumb"><img src="https://img.youtube.com/vi/UafZnwIKe9Y/hqdefault.jpg" loading="lazy" alt=""><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
-          <p class="video-title">Demo reel 3</p>
+          <div class="video-thumb"><img src="https://img.youtube.com/vi/UafZnwIKe9Y/hqdefault.jpg" loading="lazy" alt="Anuncio GLAD"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>
+          <p class="video-title">Anuncio GLAD</p>
         </button>
+        <!-- VOZ_CLOUD_END -->
       </div>
     </div>
   </section>
@@ -230,10 +239,78 @@
 
 <div class="lightbox" id="lightbox">
   <button class="lightbox-close" id="lightboxClose" aria-label="Cerrar">&times;</button>
+
+  <!-- Botón flotante derecho para desplegar/ocultar descripción (oculta por defecto) -->
+  <button class="lightbox-desc-toggle" id="lightboxDescToggle" aria-label="Ver descripción de la obra" title="Ver descripción" style="display:none;">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+    <span class="desc-toggle-text">Descripción</span>
+  </button>
+
   <div class="lightbox-inner" id="lightboxInner"></div>
+
+  <!-- Botones de navegación inferior: círculo central del que emergen dos círculos con flechas sin texto -->
+  <div class="lightbox-nav-wrap" id="lightboxNavWrap" style="display:none;">
+    <div class="lightbox-nav-cluster" id="lightboxNavCluster">
+      <button type="button" class="lightbox-circle-nav-btn nav-btn-prev" id="lightboxNavPrev" aria-label="Imagen anterior (←)" title="Anterior (←)">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      <div class="lightbox-nav-hub" id="lightboxNavHub" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="11 17 6 12 11 7"></polyline>
+          <polyline points="18 17 13 12 18 7"></polyline>
+        </svg>
+      </div>
+      <button type="button" class="lightbox-circle-nav-btn nav-btn-next" id="lightboxNavNext" aria-label="Imagen siguiente (→)" title="Siguiente (→)">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Panel lateral derecho con la descripción (oculto por defecto) -->
+  <aside class="lightbox-desc-drawer" id="lightboxDescDrawer" aria-hidden="true">
+    <div class="lightbox-desc-header">
+      <div class="lightbox-desc-meta">
+        <span class="lightbox-desc-badge" id="lightboxDescCategory">Arte</span>
+        <h3 class="lightbox-desc-title" id="lightboxDescTitle">Título</h3>
+      </div>
+      <button type="button" class="lightbox-desc-close" id="lightboxDescClose" aria-label="Ocultar descripción" title="Ocultar panel">&times;</button>
+    </div>
+    <div class="lightbox-desc-body">
+      <div class="lightbox-desc-heading">Descripción de la obra</div>
+      <p class="lightbox-desc-text" id="lightboxDescText"></p>
+    </div>
+    <div class="lightbox-desc-footer">
+      <button type="button" class="lightbox-desc-hide-btn" id="lightboxDescHideBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+        <span>Ocultar descripción</span>
+      </button>
+    </div>
+  </aside>
+</div>
+
+<!-- Botón flotante para acceder a la administración (protegido por contraseña) -->
+<button class="admin-trigger-btn" id="adminTriggerBtn" aria-label="Administración" title="Administración (Alt+A)">
+  <svg viewBox="0 0 24 24"><path d="M12 2C9.24 2 7 4.24 7 7v3H6c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-8c0-1.1-.9-2-2-2h-1V7c0-2.76-2.24-5-5-5zm0 2c1.66 0 3 1.34 3 3v3H9V7c0-1.66 1.34-3 3-3zm0 10c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/></svg>
+  <span class="admin-trigger-tooltip">Admin (Alt+A)</span>
+</button>
+
+<!-- Overlay modal de administración protegida -->
+<div class="admin-overlay" id="adminOverlay" aria-hidden="true" role="dialog" aria-modal="true">
+  <div class="admin-modal" id="adminModalContent"></div>
 </div>
 
 <script src="js/app.js"></script>
+<script src="js/admin.js"></script>
 <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 </body>
 </html>

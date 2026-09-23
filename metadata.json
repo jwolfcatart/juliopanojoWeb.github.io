@@ -1,0 +1,8 @@
+{
+  "name": "Julio Panojo",
+  "description": "Portafolio personal y profesional de Julio Panojo - J.Wolfcat ART, The Cat Wolfson Music Experience, 0:45 Audiovisual, Locución y Doblaje.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

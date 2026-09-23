@@ -43,7 +43,7 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
   align-items: center;
   background: rgba(231,229,215,0.92);
   backdrop-filter: blur(10px);
-  border-radius: 20px;
+  border-radius: 8px; /* Redondeo reducido */
   padding: 8px 12px;
   box-shadow: 0 10px 30px rgba(19,18,17,0.15);
   opacity: 0;
@@ -146,20 +146,34 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
   margin-top: 4px;
 }
 
-.nav-icons a .dot {
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: transparent;
-  transition: background .2s ease;
+/* Marca de posición en la barra de navegación al bajar:
+   Marco blanco redondo con la esquina superior izquierda en punta redondeada (sin punto amarillo) */
+.nav-icons a .dot,
+.nav-icons a.active .dot {
+  display: none !important;
 }
 
-.nav-icons a.active .dot { background: var(--accent); }
-.nav-icons a.active img { box-shadow: 0 0 0 2px var(--accent); border-radius: 50%; }
+.nav-icons a {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-icons a img {
+  transition: border-radius 0.25s ease, box-shadow 0.25s ease;
+}
+
+.nav-icons a.active,
+.float-nav .nav-home.active {
+  border-radius: 4px 50% 50% 50% !important;
+  transform: scale(1.08);
+  position: relative;
+  z-index: 2;
+}
+
+.nav-icons a.active img,
+.float-nav .nav-home.active img {
+  border-radius: 4px 50% 50% 50% !important;
+  box-shadow: 0 0 0 3px #ffffff, 0 4px 12px rgba(0, 0, 0, 0.45) !important;
+}
 
 /* ===== Hero / Inicio ===== */
 .hero {
@@ -354,46 +368,152 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
   margin-left: 9px;
 }
 
-/* ===== Arte: floating gallery with parallax ===== */
+/* ===== Arte: Galería en cuadrícula dinámica adaptativa (esquinas curvas en el conjunto, rectas en el interior) ===== */
 .float-gallery {
   position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 28px 22px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
   padding: 10px 0 20px;
 }
 
-.float-item {
-  width: 220px;
-  text-align: center;
-  will-change: transform;
-  transition: transform .25s ease;
+/* Galería de Arte: Cuadrícula fluida estilo masonry compacta */
+#galleryArte {
+  display: block !important;
+  column-count: 3;
+  column-gap: 16px;
+  background: transparent;
+  border-radius: 14px; /* El conjunto de toda la galería tiene esquinas curvas */
+  overflow: hidden;    /* Recorta únicamente las esquinas exteriores del conjunto */
+  padding: 2px;
+  margin: 10px 0 20px;
 }
 
-.float-item:nth-child(odd)  { margin-top: 26px; }
-.float-item:nth-child(3n)   { margin-top: -14px; }
+@media (max-width: 900px) {
+  #galleryArte {
+    column-count: 2;
+    column-gap: 14px;
+  }
+}
 
-.thumb-wrap {
+/* Las imágenes individuales de la galería de arte: compactas con esquinas rectas */
+#galleryArte .float-item {
+  break-inside: avoid-column;
+  display: inline-block;
+  width: 100% !important;
+  margin: 0 0 14px 0 !important;
+  text-align: left;
   position: relative;
-  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 14px 30px rgba(19,18,17,0.14);
-  transition: transform .3s ease, box-shadow .3s ease;
+  border-radius: 0 !important; /* Esquinas rectas individuales */
+  will-change: auto;
+  transform: none !important;
+  cursor: pointer;
 }
 
-.thumb-wrap.ratio-43 { aspect-ratio: 4 / 3; }
+#galleryArte .thumb-wrap {
+  width: 100%;
+  height: auto;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 !important;
+  box-shadow: 0 6px 20px rgba(19,18,17,0.13);
+  cursor: pointer;
+  background: var(--bg);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
 
-.thumb-wrap img {
+#galleryArte .float-item:hover .thumb-wrap {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(19,18,17,0.22);
+}
+
+#galleryArte .thumb-wrap img,
+#galleryArte .lightbox-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  border-radius: 0 !important;
+  transition: transform .35s ease;
+}
+
+#galleryArte .float-item:hover .thumb-wrap img {
+  transform: scale(1.02);
+}
+
+/* Título de la obra en arte: solo visible sobre la imagen al pasar el ratón */
+#galleryArte .float-item .cap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 28px 12px 10px;
+  background: linear-gradient(to top, rgba(14, 13, 12, 0.92) 0%, rgba(14, 13, 12, 0.45) 65%, transparent 100%);
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.25;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+  z-index: 5;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+#galleryArte .float-item:hover .cap,
+#galleryArte .float-item:focus-within .cap {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Galería de Música: Cuadrícula limpia y ordenada con redondeo reducido */
+#galleryMusica {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+  justify-content: center;
+}
+
+#galleryMusica .float-item {
+  width: 100%;
+  margin: 0 !important;
+  text-align: left;
+  transform: none !important;
+}
+
+#galleryMusica .thumb-wrap {
+  aspect-ratio: 1 / 1;
+  border-radius: 6px; /* Redondeo reducido */
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(19,18,17,0.12);
+  transition: transform .25s ease, box-shadow .25s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+#galleryMusica .thumb-wrap img {
+  border-radius: 6px;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform .25s ease;
 }
 
-.float-item:hover .thumb-wrap {
-  transform: scale(1.04) rotate(-0.5deg);
-  box-shadow: 0 20px 40px rgba(19,18,17,0.22);
+#galleryMusica .float-item:hover .thumb-wrap {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(19,18,17,0.2);
+}
+
+#galleryMusica .float-item .cap {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.85;
 }
 
 /* Lupa de zoom: lupa negra sobre círculo amarillo, centrada, visible al hover */
@@ -405,53 +525,45 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
   justify-content: center;
   opacity: 0;
   transition: opacity .2s ease;
+  z-index: 3;
 }
 
 .thumb-wrap:hover .zoom-badge { opacity: 1; }
 
 .zoom-badge .circle {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 18px rgba(19,18,17,0.3);
+  box-shadow: 0 6px 18px rgba(19,18,17,0.35);
 }
 
 .zoom-badge svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   fill: none;
   stroke: var(--ink);
   stroke-width: 2.4;
   stroke-linecap: round;
 }
 
-.float-item .cap {
-  margin-top: 10px;
-  font-size: 0.85rem;
-  opacity: 0;
-  transition: opacity .2s ease;
-}
-
-.float-item:hover .cap { opacity: 0.75; }
-
 /* ===== Musica ===== */
 .spotify-embed {
   max-width: 620px;
   margin: 0 auto;
-  border-radius: 22px;
+  border-radius: 8px; /* Redondeo reducido */
   overflow: hidden;
   background: var(--ink);
-  padding: 14px;
-  box-shadow: 0 18px 40px rgba(19,18,17,0.2);
+  padding: 12px;
+  box-shadow: 0 16px 36px rgba(19,18,17,0.2);
 }
 
 .spotify-embed iframe {
   display: block;
-  border-radius: 12px;
+  border-radius: 6px;
   width: 100%;
   border: 0;
 }
@@ -518,48 +630,55 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
 
 /* ===== Video / Voz: floating video cloud + modal ===== */
 .video-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 14px 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
   padding: 10px 0;
 }
 
 .video-chip {
-  width: 200px;
+  width: 100%;
   border: none;
   background: transparent;
   text-align: left;
-  animation: bob 6s ease-in-out infinite;
-  transition: margin .2s ease;
+  animation: none !important;
+  margin: 0 !important;
+  cursor: pointer;
+  transition: transform .25s ease;
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  display: block;
 }
 
-.video-chip:hover { margin-bottom: 6px; }
-
-.video-chip:nth-child(2n) { animation-delay: -2s; }
-.video-chip:nth-child(3n) { animation-delay: -4s; }
-.video-chip:nth-child(odd) { margin-top: 20px; }
-
-@keyframes bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+.video-chip:hover {
+  transform: translateY(-3px);
 }
 
 .video-thumb {
   position: relative;
-  border-radius: 14px;
+  border-radius: 6px; /* Redondeo reducido */
   overflow: hidden;
-  aspect-ratio: 16/9;
-  box-shadow: 0 12px 26px rgba(19,18,17,0.16);
+  aspect-ratio: 16 / 9; /* Respeta el formato de los vídeos */
+  box-shadow: 0 10px 24px rgba(19,18,17,0.16);
   transition: transform .25s ease, box-shadow .25s ease;
 }
 
 .video-chip:hover .video-thumb {
-  transform: scale(1.05);
-  box-shadow: 0 18px 34px rgba(19,18,17,0.24);
+  box-shadow: 0 16px 32px rgba(19,18,17,0.24);
 }
 
-.video-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.video-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .35s ease;
+}
+
+.video-chip:hover .video-thumb img {
+  transform: scale(1.02);
+}
 
 .video-thumb .play-badge {
   position: absolute;
@@ -567,31 +686,47 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(19,18,17,0.15);
+  background: rgba(19,18,17,0.2);
   opacity: 0;
   transition: opacity .2s ease;
+  z-index: 2;
 }
 
 .video-chip:hover .video-thumb .play-badge { opacity: 1; }
 
 .video-thumb .play-badge svg {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   fill: var(--accent);
   filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
 }
 
+/* Título de vídeo: solo visible sobre la miniatura al pasar el ratón por encima (igual que en arte) */
 .video-title {
-  margin-top: 8px;
-  font-size: 0.85rem;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 32px 14px 10px;
+  background: linear-gradient(to top, rgba(14, 13, 12, 0.94) 0%, rgba(14, 13, 12, 0.5) 65%, transparent 100%);
+  color: #fff;
+  font-size: 0.84rem;
   font-weight: 600;
-  text-align: center;
+  line-height: 1.25;
   opacity: 0;
-  transform: translateY(-4px);
-  transition: opacity .2s ease, transform .2s ease;
+  transform: translateY(8px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
+  z-index: 4;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
-.video-chip:hover .video-title {
+.video-chip:hover .video-title,
+.video-chip:focus .video-title,
+.video-chip:focus-within .video-title {
   opacity: 1;
   transform: translateY(0);
 }
@@ -600,61 +735,425 @@ svg.icon { width: 22px; height: 22px; display: block; fill: currentColor; }
 .lightbox {
   position: fixed;
   inset: 0;
-  background: rgba(19,18,17,0.86);
-  z-index: 100;
-  display: none;
+  background: rgba(14, 13, 12, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 1000;
+  display: none !important;
   align-items: center;
   justify-content: center;
   padding: 24px;
 }
 
-.lightbox.open { display: flex; }
+.lightbox.open {
+  display: flex !important;
+}
 
 .lightbox-inner {
   width: 100%;
   max-width: 900px;
   aspect-ratio: 16/9;
-  border-radius: 14px;
+  border-radius: 8px; /* Redondeo reducido */
   overflow: hidden;
   background: #000;
 }
 
 .lightbox-inner iframe { width: 100%; height: 100%; border: 0; }
 
+.lightbox.img-mode {
+  padding: 68px 24px 84px 24px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+  transition: padding-right 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              padding-bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+@media (min-width: 900px) {
+  .lightbox.img-mode.desc-open {
+    padding-right: 400px;
+  }
+}
+
+@media (max-width: 899px) {
+  .lightbox.img-mode.desc-open {
+    padding-bottom: 270px;
+  }
+}
+
 .lightbox.img-mode .lightbox-inner {
   aspect-ratio: auto;
-  width: auto;
-  max-width: 92vw;
-  max-height: 88vh;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   background: transparent;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .lightbox.img-mode .lightbox-inner img {
-  max-width: 92vw;
-  max-height: 88vh;
+  max-width: 100%;
+  max-height: 100%;
   width: auto;
   height: auto;
   object-fit: contain;
-  border-radius: 12px;
-  margin: 0 auto;
+  border-radius: 6px; /* Redondeo reducido */
+  margin: auto;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
+  pointer-events: auto;
 }
 
 .lightbox-close {
-  position: absolute;
-  top: 22px;
-  right: 26px;
+  position: fixed;
+  top: 18px;
+  right: 20px;
   background: var(--accent);
   color: var(--ink);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 700;
+  cursor: pointer;
+  z-index: 1025;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.lightbox-close:hover {
+  transform: scale(1.1);
+  background: #fff;
+}
+
+/* Botón para desplegar descripción en lightbox (lado derecho) */
+.lightbox-desc-toggle {
+  position: fixed;
+  top: 18px;
+  right: 76px;
+  z-index: 1020;
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: rgba(19, 18, 17, 0.88);
+  backdrop-filter: blur(10px);
+  color: #fdfbf7;
+  border: 1px solid rgba(255, 222, 0, 0.4);
+  padding: 8px 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+  transition: all 0.25s ease;
+}
+
+.lightbox.img-mode .lightbox-desc-toggle {
+  display: inline-flex;
+}
+
+.lightbox-desc-toggle:hover {
+  background: var(--accent);
+  color: var(--ink);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 222, 0, 0.25);
+}
+
+.lightbox-desc-toggle.active {
+  background: var(--accent);
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+/* Panel lateral derecho de descripción (oculto por defecto) */
+.lightbox-desc-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 88vw;
+  background: rgba(22, 20, 19, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: #fdfbf7;
+  border-left: 1px solid rgba(255, 222, 0, 0.2);
+  box-shadow: -14px 0 45px rgba(0, 0, 0, 0.7);
+  z-index: 1015;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  transform: translateX(105%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.35s ease;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.lightbox.desc-open .lightbox-desc-drawer,
+.lightbox-desc-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Adaptación del contenido cuando el panel está desplegado en desktop */
+@media (min-width: 900px) {
+  .lightbox.img-mode .lightbox-inner {
+    transition: padding-right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .lightbox.img-mode.desc-open .lightbox-inner {
+    padding-right: 380px;
+  }
+}
+
+.lightbox-desc-header {
+  padding: 24px 20px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.lightbox-desc-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.lightbox-desc-badge {
+  display: inline-block;
+  background: rgba(255, 222, 0, 0.18);
+  color: var(--accent);
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.lightbox-desc-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+.lightbox-desc-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ddd;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.lightbox-desc-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transform: scale(1.08);
+}
+
+.lightbox-desc-body {
+  padding: 24px 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.lightbox-desc-heading {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 222, 0, 0.85);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.lightbox-desc-text {
+  font-size: 0.96rem;
+  line-height: 1.7;
+  color: #eae7df;
+  margin: 0;
+  font-weight: 400;
+  white-space: pre-wrap;
+}
+
+.lightbox-desc-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.lightbox-desc-hide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #ddd;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lightbox-desc-hide-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ===== Botones de navegación inferior en Lightbox ===== */
+/* Desaparecen al alejar el ratón; emergen dos círculos con flechas (sin texto) desde el círculo central */
+.lightbox-nav-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 110;
+  pointer-events: auto;
+  transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 900px) {
+  .lightbox.desc-open .lightbox-nav-wrap {
+    right: 400px; /* Centrado con respecto a la imagen visible */
+  }
+}
+
+.lightbox-nav-cluster {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px) scale(0.9);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.3s ease;
+  pointer-events: none;
+}
+
+/* Aparece al deslizar o pasar el ratón cerca de la zona de navegación */
+.lightbox-nav-wrap:hover .lightbox-nav-cluster,
+.lightbox-nav-wrap.mouse-near .lightbox-nav-cluster {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* Círculo central */
+.lightbox-nav-hub {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(22, 20, 19, 0.95);
+  border: 1.5px solid rgba(255, 222, 0, 0.4);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  z-index: 2;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+  user-select: none;
+}
+
+/* Los dos círculos con flechas (sin texto) que emergen del círculo central */
+.lightbox-circle-nav-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #181715;
+  color: var(--accent);
+  border: 1.5px solid rgba(255, 222, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  outline: none;
+  z-index: 1;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              background 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease,
+              opacity 0.25s ease;
+}
+
+/* En reposo, replegados hacia el centro */
+.lightbox-circle-nav-btn.nav-btn-prev {
+  transform: translateX(22px) scale(0.7);
+  opacity: 0.3;
+}
+
+.lightbox-circle-nav-btn.nav-btn-next {
+  transform: translateX(-22px) scale(0.7);
+  opacity: 0.3;
+}
+
+/* Al deslizar o pasar el ratón sobre la navegación, los dos círculos emergen hacia los lados */
+.lightbox-nav-wrap:hover .lightbox-circle-nav-btn.nav-btn-prev,
+.lightbox-nav-wrap.mouse-near .lightbox-circle-nav-btn.nav-btn-prev {
+  transform: translateX(-16px) scale(1);
+  opacity: 1;
+}
+
+.lightbox-nav-wrap:hover .lightbox-circle-nav-btn.nav-btn-next,
+.lightbox-nav-wrap.mouse-near .lightbox-circle-nav-btn.nav-btn-next {
+  transform: translateX(16px) scale(1);
+  opacity: 1;
+}
+
+.lightbox-circle-nav-btn:hover {
+  background: var(--accent);
+  color: var(--ink);
+  border-color: var(--accent);
+  box-shadow: 0 6px 20px rgba(255, 222, 0, 0.45);
+}
+
+.lightbox-circle-nav-btn:hover.nav-btn-prev {
+  transform: translateX(-20px) scale(1.12);
+}
+
+.lightbox-circle-nav-btn:hover.nav-btn-next {
+  transform: translateX(20px) scale(1.12);
 }
 
 /* ===== Footer ===== */
@@ -675,7 +1174,7 @@ footer .contact-links {
 
 footer a:hover { color: var(--accent); }
 
-/* ===== Píldora de contacto flotante (abajo) ===== */
+/* ===== Píldora de pie de página flotante con enlaces (solo logos) ===== */
 .contact-pill {
   position: fixed;
   bottom: 18px;
@@ -683,35 +1182,218 @@ footer a:hover { color: var(--accent); }
   transform: translateX(-50%);
   z-index: 60;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(231,229,215,0.92);
-  backdrop-filter: blur(10px);
+  background: rgba(231, 229, 215, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 999px;
-  padding: 8px;
-  box-shadow: 0 8px 24px rgba(19,18,17,0.14);
+  padding: 6px 12px;
+  box-shadow: 0 8px 24px rgba(19, 18, 17, 0.16);
   max-width: 92vw;
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+}
+
+.contact-pill.hidden-footer {
+  display: none !important;
 }
 
 .contact-pill a {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  transition: background .2s ease;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  padding: 0;
+  color: var(--ink);
+  transition: background 0.2s ease, transform 0.2s ease;
+  position: relative;
+  text-decoration: none;
 }
 
-.contact-pill a svg.icon { width: 18px; height: 18px; }
+.contact-pill a svg.icon {
+  width: 20px;
+  height: 20px;
+}
 
-.contact-pill a:hover { background: var(--accent); }
+.contact-pill a:hover {
+  background: var(--accent);
+  transform: scale(1.12);
+}
 
-@media (max-width: 640px) {
-  .contact-pill { bottom: 10px; padding: 6px; }
-  .contact-pill a { padding: 8px 12px; font-size: 0.78rem; }
+/* Ocultar etiquetas de texto en el pie de página para que solo se muestren los logos */
+.contact-pill a .pill-label,
+.contact-pill a span:not(.pill-icon) {
+  display: none !important;
+}
+
+/* Vista móvil: Galerías táctiles horizontales de doble fila siguiendo la estética de escritorio
+   (evita una única columna monótona de imágenes y permite explorar varios elementos simultáneos de forma táctil) */
+@media (max-width: 768px) {
+  #galleryArte {
+    display: grid !important;
+    grid-template-rows: repeat(2, 170px) !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: clamp(140px, 42vw, 185px) !important;
+    gap: 10px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 16px 16px !important;
+    margin: 8px -16px 20px !important;
+    width: calc(100% + 32px) !important;
+    box-sizing: border-box;
+    column-count: auto !important;
+    border-radius: 14px;
+    background: transparent;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(19, 18, 17, 0.28) rgba(0, 0, 0, 0.04);
+  }
+
+  #galleryArte .float-item {
+    break-inside: auto !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    scroll-snap-align: start;
+    border-radius: 0 !important;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+  }
+
+  #galleryArte .thumb-wrap {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(19, 18, 17, 0.12);
+  }
+
+  #galleryArte .thumb-wrap img,
+  #galleryArte .lightbox-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    border-radius: 0 !important;
+  }
+
+  #galleryMusica {
+    display: grid !important;
+    grid-template-rows: repeat(2, 145px) !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 145px !important;
+    gap: 10px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 16px 16px !important;
+    margin: 8px -16px 20px !important;
+    width: calc(100% + 32px) !important;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(19, 18, 17, 0.28) rgba(0, 0, 0, 0.04);
+  }
+
+  #galleryMusica .float-item {
+    display: block !important;
+    width: 145px !important;
+    height: 145px !important;
+    margin: 0 !important;
+    scroll-snap-align: start;
+  }
+
+  #galleryMusica .thumb-wrap {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 6px !important;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(19, 18, 17, 0.12);
+  }
+
+  #galleryMusica .thumb-wrap img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+  }
+
+  .video-cloud {
+    display: grid !important;
+    grid-template-rows: repeat(2, auto) !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: clamp(190px, 58vw, 240px) !important;
+    gap: 10px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    padding: 8px 16px 16px !important;
+    margin: 8px -16px 20px !important;
+    width: calc(100% + 32px) !important;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(19, 18, 17, 0.28) rgba(0, 0, 0, 0.04);
+  }
+
+  .video-cloud .video-chip {
+    display: block !important;
+    width: 100% !important;
+    margin: 0 !important;
+    scroll-snap-align: start;
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+  }
+
+  .video-cloud .video-thumb {
+    width: 100% !important;
+    aspect-ratio: 16 / 9 !important;
+    border-radius: 6px;
+  }
+
+  #galleryArte::-webkit-scrollbar,
+  #galleryMusica::-webkit-scrollbar,
+  .video-cloud::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  #galleryArte::-webkit-scrollbar-track,
+  #galleryMusica::-webkit-scrollbar-track,
+  .video-cloud::-webkit-scrollbar-track {
+    background: rgba(19, 18, 17, 0.05);
+    border-radius: 99px;
+  }
+
+  #galleryArte::-webkit-scrollbar-thumb,
+  #galleryMusica::-webkit-scrollbar-thumb,
+  .video-cloud::-webkit-scrollbar-thumb {
+    background: rgba(19, 18, 17, 0.26);
+    border-radius: 99px;
+  }
+
+  .contact-pill {
+    bottom: 12px;
+    padding: 5px 10px;
+    gap: 6px;
+  }
+
+  .contact-pill a {
+    width: 38px;
+    height: 38px;
+  }
+
+  .contact-pill a svg.icon {
+    width: 19px;
+    height: 19px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -755,7 +1437,6 @@ footer a:hover { color: var(--accent); }
     height: 12px;
   }
   .music-covers img { width: 100px; }
-  .float-item { width: 44%; }
 }
 
 @media (max-width: 400px) {
@@ -798,3 +1479,25 @@ footer a:hover { color: var(--accent); }
     height: 11px;
   }
 }
+
+@media (max-width: 480px) {
+  #galleryArte {
+    grid-template-rows: repeat(2, 140px) !important;
+    grid-auto-columns: clamp(125px, 40vw, 155px) !important;
+    gap: 8px !important;
+  }
+  #galleryMusica {
+    grid-template-rows: repeat(2, 125px) !important;
+    grid-auto-columns: 125px !important;
+    gap: 8px !important;
+  }
+  #galleryMusica .float-item {
+    width: 125px !important;
+    height: 125px !important;
+  }
+  .video-cloud {
+    grid-auto-columns: clamp(175px, 60vw, 215px) !important;
+    gap: 8px !important;
+  }
+}
+
