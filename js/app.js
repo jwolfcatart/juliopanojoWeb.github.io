@@ -352,8 +352,24 @@ window.applyPortfolioSettings = function(settings) {
 // Cargar configuración al iniciar
 try {
   fetch('data/portfolio-content.json')
-    .then(r => r.json())
+    .then(async (r) => {
+      if (!r.ok) return null;
+      const cType = (r.headers.get('content-type') || '').toLowerCase();
+      const txt = await r.text();
+      if (!txt || txt.trim().startsWith('<')) return null;
+      try {
+        return JSON.parse(txt);
+      } catch (e) {
+        return null;
+      }
+    })
     .then(data => {
+      if (!data) {
+        const embedded = document.getElementById('portfolioInitialData');
+        if (embedded && embedded.textContent) {
+          try { data = JSON.parse(embedded.textContent); } catch (e) {}
+        }
+      }
       if (data && data.settings) {
         window.applyPortfolioSettings(data.settings);
       }

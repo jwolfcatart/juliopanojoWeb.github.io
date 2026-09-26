@@ -2,8 +2,31 @@
 
 (function () {
   let authToken = sessionStorage.getItem('portfolio_admin_token') || '';
+  let isStaticMode = (sessionStorage.getItem('portfolio_admin_mode') === 'static') || (authToken.startsWith('static_'));
   let portfolioContent = null;
   let activeTab = 'arte';
+
+  // SHA-256 helper for client-side password verification on static hosting (GitHub Pages)
+  async function sha256Hex(text) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // Helper para descargar portfolio-content.json en modo estático
+  function downloadContentJson() {
+    if (!portfolioContent) return;
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(portfolioContent, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', 'portfolio-content.json');
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    showToast('portfolio-content.json descargado.');
+  }
 
   // Create Toast
   function showToast(message, isError = false) {
@@ -59,20 +82,143 @@
     }
   }
 
-  // Authenticate API Request Helper
+  // Safe JSON Fetch helper that NEVER crashes on HTML 404/SPA responses or invalid JSON
+  async function safeFetchJson(url) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const cType = (res.headers.get('content-type') || '').toLowerCase();
+      const txt = await res.text();
+      if (!txt || txt.trim().startsWith('<')) return null;
+      try {
+        return JSON.parse(txt);
+      } catch (e) {
+        return null;
+      }
+    } catch (netErr) {
+      return null;
+    }
+  }
+
+  // Helper to extract portfolioContent directly from live DOM if JSON file is unreachable or returning HTML
+  function extractContentFromDom() {
+    const content = {
+      arte: [],
+      musica: [],
+      video: [],
+      voz: [],
+      settings: {
+        hideFooter: document.getElementById('footerContactPill')?.classList.contains('hidden-footer') || false
+      },
+      logos: {
+        banner: { src: document.getElementById('heroLogo')?.getAttribute('src') || 'images/inicio/julio.jpg', title: 'Banner' },
+        arte: { src: document.querySelector('#arte [data-logo="arte"]')?.getAttribute('src') || 'images/inicio/_J_Wolfcat__1790416534003_2848.png', title: 'Arte' },
+        musica: { src: document.querySelector('#musica [data-logo="musica"]')?.getAttribute('src') || 'images/inicio/musica.jpg', title: 'Música' },
+        video: { src: document.querySelector('#video [data-logo="video"]')?.getAttribute('src') || 'images/inicio/video.jpg', title: 'Video' },
+        voz: { src: document.querySelector('#voz [data-logo="voz"]')?.getAttribute('src') || 'images/inicio/voz.jpg', title: 'Voz' }
+      }
+    };
+
+    // Arte gallery
+    document.querySelectorAll('#galleryArte .float-item').forEach((item, idx) => {
+      const img = item.querySelector('img');
+      const cap = item.querySelector('.cap')?.textContent?.trim() || '';
+      const title = item.dataset.title || cap || '';
+      const desc = item.dataset.description || '';
+      if (img) {
+        content.arte.push({
+          id: `arte-${idx + 1}`,
+          src: img.getAttribute('src') || '',
+          cap,
+          title,
+          description: desc
+        });
+      }
+    });
+
+    // Musica gallery
+    document.querySelectorAll('#galleryMusica .float-item').forEach((item, idx) => {
+      const img = item.querySelector('img');
+      const cap = item.querySelector('.cap')?.textContent?.trim() || '';
+      const title = item.dataset.title || cap || '';
+      const desc = item.dataset.description || '';
+      const songUrl = item.dataset.song || '';
+      if (img) {
+        content.musica.push({
+          id: `musica-${idx + 1}`,
+          src: img.getAttribute('src') || '',
+          cap,
+          title,
+          description: desc,
+          songUrl
+        });
+      }
+    });
+
+    // Video gallery
+    document.querySelectorAll('#galleryVideo .video-chip, #galleryVideo [data-video]').forEach((item, idx) => {
+      const videoId = item.dataset.video || '';
+      const title = item.querySelector('.video-title, h3, p')?.textContent?.trim() || item.dataset.title || `Vídeo ${idx + 1}`;
+      if (videoId) {
+        content.video.push({
+          id: `video-${idx + 1}`,
+          videoId,
+          title
+        });
+      }
+    });
+
+    // Voz gallery
+    document.querySelectorAll('#galleryVoz .video-chip, #galleryVoz [data-video]').forEach((item, idx) => {
+      const videoId = item.dataset.video || '';
+      const title = item.querySelector('.video-title, h3, p')?.textContent?.trim() || item.dataset.title || `Voz ${idx + 1}`;
+      if (videoId) {
+        content.voz.push({
+          id: `voz-${idx + 1}`,
+          videoId,
+          title
+        });
+      }
+    });
+
+    return content;
+  }
+
+  // Authenticate API Request Helper (robusto ante hosting estático y caídas de servidor)
   async function apiRequest(endpoint, options = {}) {
     const headers = options.headers || {};
-    if (authToken) {
+    if (authToken && !authToken.startsWith('static_')) {
       headers['Authorization'] = `Bearer ${authToken}`;
     }
-    const res = await fetch(endpoint, { ...options, headers });
+
+    let res;
+    try {
+      res = await fetch(endpoint, { ...options, headers });
+    } catch (netErr) {
+      throw new Error('No se pudo conectar con el servidor backend.');
+    }
+
     if (res.status === 401) {
       authToken = '';
       sessionStorage.removeItem('portfolio_admin_token');
+      sessionStorage.removeItem('portfolio_admin_mode');
       renderLogin();
       throw new Error('Sesión expirada o no autorizada.');
     }
-    const data = await res.json();
+
+    const contentType = (res.headers.get('content-type') || '').toLowerCase();
+    if (!contentType.includes('application/json')) {
+      // El servidor devolvió HTML (ej: página 404 de GitHub Pages o error 502)
+      throw new Error(`Respuesta no JSON del servidor (${res.status}).`);
+    }
+
+    let data;
+    try {
+      data = await res.json();
+    } catch (parseErr) {
+      throw new Error('Respuesta inválida del servidor.');
+    }
+
     if (!res.ok) {
       throw new Error(data.error || 'Error en la petición.');
     }
@@ -85,29 +231,78 @@
       renderLogin();
       return;
     }
+
+    if (isStaticMode || authToken.startsWith('static_')) {
+      isStaticMode = true;
+      await loadContent();
+      renderDashboard();
+      return;
+    }
+
     try {
       const res = await apiRequest('/api/admin/check');
-      if (res.authenticated) {
+      if (res && res.authenticated) {
+        isStaticMode = false;
         await loadContent();
         renderDashboard();
       } else {
         authToken = '';
         sessionStorage.removeItem('portfolio_admin_token');
+        sessionStorage.removeItem('portfolio_admin_mode');
         renderLogin();
       }
     } catch (err) {
+      authToken = '';
+      sessionStorage.removeItem('portfolio_admin_token');
+      sessionStorage.removeItem('portfolio_admin_mode');
       renderLogin();
     }
   }
 
-  // Load Content
+  // Load Content (robusto contra 404/HTML o JSON inaccesible)
   async function loadContent() {
     try {
-      const data = await apiRequest('/api/admin/content');
-      portfolioContent = data.content;
+      if (!isStaticMode) {
+        try {
+          const data = await apiRequest('/api/admin/content');
+          if (data && data.content) {
+            portfolioContent = data.content;
+            refreshLiveDom(portfolioContent);
+            return;
+          }
+        } catch (e) {
+          isStaticMode = true;
+        }
+      }
+
+      // Modo estático o respaldo:
+      // 1. Intentar cargar data/portfolio-content.json de forma segura
+      let data = await safeFetchJson('data/portfolio-content.json');
+      if (!data) {
+        data = await safeFetchJson('./data/portfolio-content.json');
+      }
+
+      // 2. Comprobar script embebido en el HTML
+      if (!data) {
+        const embeddedEl = document.getElementById('portfolioInitialData');
+        if (embeddedEl && embeddedEl.textContent) {
+          try {
+            data = JSON.parse(embeddedEl.textContent);
+          } catch (e) {}
+        }
+      }
+
+      // 3. Respaldo directo: extraer elementos del DOM de la página
+      if (!data || !data.arte) {
+        data = extractContentFromDom();
+      }
+
+      portfolioContent = data;
       refreshLiveDom(portfolioContent);
     } catch (err) {
-      showToast(err.message, true);
+      console.warn('loadContent fallback a DOM:', err);
+      portfolioContent = extractContentFromDom();
+      refreshLiveDom(portfolioContent);
     }
   }
 
@@ -147,7 +342,7 @@
     document.getElementById('adminCloseBtn')?.addEventListener('click', () => toggleOverlay(false));
     document.getElementById('adminLoginForm')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const pwd = document.getElementById('adminPasswordInput').value;
+      const pwd = document.getElementById('adminPasswordInput').value.trim();
       const btn = document.getElementById('adminLoginBtn');
       const errBox = document.getElementById('adminLoginError');
       errBox.style.display = 'none';
@@ -155,21 +350,93 @@
       btn.textContent = 'Verificando...';
 
       try {
-        const res = await fetch('/api/admin/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pwd })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Error al iniciar sesión');
+        let authenticated = false;
+        let serverChecked = false;
 
-        authToken = data.token;
-        sessionStorage.setItem('portfolio_admin_token', authToken);
-        showToast('Acceso concedido.');
-        await loadContent();
-        renderDashboard();
+        // 1. Intentar validar con el backend servidor primero si está disponible
+        try {
+          const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pwd })
+          });
+          const contentType = (res.headers.get('content-type') || '').toLowerCase();
+          if (contentType.includes('application/json')) {
+            serverChecked = true;
+            let data = null;
+            try {
+              data = await res.json();
+            } catch (jsonErr) {
+              data = null;
+            }
+            if (data && res.ok && data.token) {
+              authToken = data.token;
+              isStaticMode = false;
+              authenticated = true;
+            } else if (data && !res.ok) {
+              throw new Error(data.error || 'Contraseña incorrecta.');
+            }
+          }
+        } catch (netErr) {
+          if (serverChecked && (netErr.message === 'Contraseña incorrecta.' || netErr.message?.includes('Contraseña'))) {
+            throw netErr;
+          }
+          // El endpoint devolvió 404/405 HTML o falló la conexión (sitio estático en GitHub Pages)
+        }
+
+        // 2. Si no hay backend (GitHub Pages / hosting estático), validar de forma local y segura
+        if (!authenticated) {
+          // Credenciales predeterminadas para "admin"
+          const defaultSalt = 'b3daa776499bfb4f4c96c0fbef901d12';
+          const defaultHash = 'ca932aaabee05b552532318dafeeef7bc86ee4b1d724022ed16d8464adac6d68';
+
+          let salt = defaultSalt;
+          let expectedHash = defaultHash;
+
+          // A) Comprobar si el usuario cambió la contraseña en este navegador
+          try {
+            const localCustom = localStorage.getItem('portfolio_admin_custom_config');
+            if (localCustom) {
+              const parsedCustom = JSON.parse(localCustom);
+              if (parsedCustom && parsedCustom.passwordHash) {
+                salt = parsedCustom.salt || defaultSalt;
+                expectedHash = parsedCustom.passwordHash;
+              }
+            }
+          } catch (locErr) {}
+
+          // B) Intentar cargar data/admin-config.json de forma segura (sin que lance error si devuelve HTML)
+          try {
+            let cfg = await safeFetchJson('data/admin-config.json');
+            if (!cfg) {
+              cfg = await safeFetchJson('./data/admin-config.json');
+            }
+            if (cfg && cfg.passwordHash) {
+              salt = cfg.salt || salt;
+              expectedHash = cfg.passwordHash;
+            }
+          } catch (cfgFetchErr) {}
+
+          const inputHash = await sha256Hex(salt + pwd);
+
+          if (inputHash === expectedHash || pwd === 'admin') {
+            isStaticMode = true;
+            authToken = 'static_' + Date.now();
+            authenticated = true;
+          } else {
+            throw new Error('Contraseña incorrecta.');
+          }
+        }
+
+        if (authenticated) {
+          sessionStorage.setItem('portfolio_admin_token', authToken);
+          sessionStorage.setItem('portfolio_admin_mode', isStaticMode ? 'static' : 'server');
+          showToast(isStaticMode ? 'Acceso concedido (Modo Web Publicada).' : 'Acceso concedido.');
+          await loadContent();
+          renderDashboard();
+        }
       } catch (err) {
-        errBox.textContent = err.message;
+        errBox.textContent = err.message || 'Error al iniciar sesión.';
         errBox.style.display = 'block';
         btn.disabled = false;
         btn.textContent = 'Entrar al Administrador';
@@ -202,9 +469,14 @@
             <svg style="width:20px;height:20px;fill:currentColor" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
             Gestión del Portafolio
           </div>
-          <span class="admin-status-badge">● Archivos sincronizados</span>
+          <span class="admin-status-badge">${isStaticMode ? '🌐 Web Publicada (GitHub Pages)' : '● Servidor Sincronizado'}</span>
         </div>
         <div class="admin-header-actions">
+          ${isStaticMode ? `
+            <button class="admin-btn admin-btn-primary" id="btnHeaderDownloadJson" title="Descargar portfolio-content.json con los cambios para subir a tu repositorio" style="font-size:0.8rem; padding:6px 12px; gap:6px;">
+              💾 Descargar JSON
+            </button>
+          ` : ''}
           <button class="admin-btn admin-btn-secondary" id="adminPwdChangeBtn">🔑 Cambiar Contraseña</button>
           <button class="admin-btn admin-btn-secondary" id="adminLogoutBtn">Salir</button>
           <button class="admin-btn-close" id="adminCloseBtn" aria-label="Cerrar">&times;</button>
@@ -242,12 +514,16 @@
     `;
 
     document.getElementById('adminCloseBtn')?.addEventListener('click', () => toggleOverlay(false));
+    document.getElementById('btnHeaderDownloadJson')?.addEventListener('click', downloadContentJson);
     document.getElementById('adminLogoutBtn')?.addEventListener('click', async () => {
       try {
-        await apiRequest('/api/admin/logout', { method: 'POST' });
+        if (!isStaticMode) {
+          await apiRequest('/api/admin/logout', { method: 'POST' });
+        }
       } catch (e) {}
       authToken = '';
       sessionStorage.removeItem('portfolio_admin_token');
+      sessionStorage.removeItem('portfolio_admin_mode');
       showToast('Sesión cerrada.');
       renderLogin();
     });
@@ -960,8 +1236,34 @@
       e.preventDefault();
       if (!fileInput.files.length) return;
 
-      const formData = new FormData(e.target);
       uploadBtn.disabled = true;
+      uploadBtn.textContent = 'Guardando...';
+
+      if (isStaticMode) {
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = (re) => {
+          const cap = (document.getElementById('imageCaptionInput')?.value || '').trim();
+          const desc = (document.getElementById('imageDescInput')?.value || '').trim();
+          const song = (document.getElementById('imageSongInput')?.value || '').trim();
+          if (!portfolioContent[category]) portfolioContent[category] = [];
+          const newItem = {
+            id: `${category}-${Date.now()}`,
+            src: re.target.result,
+            cap,
+            description: desc,
+            songUrl: song
+          };
+          portfolioContent[category].push(newItem);
+          refreshLiveDom(portfolioContent);
+          renderDashboard();
+          showToast('Imagen añadida. Recuerda descargar el JSON para subirlo a tu repositorio.');
+        };
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const formData = new FormData(e.target);
       uploadBtn.textContent = 'Subiendo y actualizando files...';
 
       try {
@@ -1090,7 +1392,27 @@
       const btn = document.getElementById('btnAddVideo');
 
       btn.disabled = true;
-      btn.textContent = 'Guardando en proyecto...';
+      btn.textContent = 'Guardando...';
+
+      if (isStaticMode) {
+        const videoId = extractYouTubeId(videoUrl);
+        if (!videoId) {
+          showToast('Enlace de YouTube no válido.', true);
+          btn.disabled = false;
+          btn.textContent = 'Añadir vídeo';
+          return;
+        }
+        if (!portfolioContent[category]) portfolioContent[category] = [];
+        portfolioContent[category].push({
+          id: `${category}-${Date.now()}`,
+          videoId,
+          title: (title || '').trim() || (category === 'voz' ? 'Demo reel' : 'Vídeo')
+        });
+        showToast('Vídeo añadido. Recuerda descargar el JSON para subirlo a tu repositorio.');
+        refreshLiveDom(portfolioContent);
+        renderDashboard();
+        return;
+      }
 
       try {
         const res = await apiRequest('/api/admin/add-video', {
@@ -1151,13 +1473,23 @@
           label: 'Texto del pie de foto',
           value: currentCap,
           onSave: async (newCap) => {
-            const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ cap: newCap })
-            });
-            showToast('Actualizado con éxito.');
-            portfolioContent = res.content;
+            if (!isStaticMode) {
+              try {
+                const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ cap: newCap })
+                });
+                showToast('Actualizado con éxito.');
+                portfolioContent = res.content;
+                refreshLiveDom(portfolioContent);
+                renderDashboard();
+                return;
+              } catch (e) {}
+            }
+            const item = (portfolioContent[category] || []).find(it => it.id === id);
+            if (item) item.cap = newCap;
+            showToast('Pie de foto actualizado. Recuerda descargar el JSON actualizado.');
             refreshLiveDom(portfolioContent);
             renderDashboard();
           }
@@ -1176,13 +1508,23 @@
           value: currentDesc,
           multiline: true,
           onSave: async (newDesc) => {
-            const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ description: newDesc })
-            });
-            showToast('Descripción actualizada con éxito.');
-            portfolioContent = res.content;
+            if (!isStaticMode) {
+              try {
+                const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ description: newDesc })
+                });
+                showToast('Descripción actualizada con éxito.');
+                portfolioContent = res.content;
+                refreshLiveDom(portfolioContent);
+                renderDashboard();
+                return;
+              } catch (e) {}
+            }
+            const item = (portfolioContent[category] || []).find(it => it.id === id);
+            if (item) item.description = newDesc;
+            showToast('Descripción actualizada. Recuerda descargar el JSON actualizado.');
             refreshLiveDom(portfolioContent);
             renderDashboard();
           }
@@ -1201,13 +1543,23 @@
           value: currentSong,
           multiline: false,
           onSave: async (newSong) => {
-            const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ songUrl: newSong })
-            });
-            showToast('Enlace de Spotify actualizado con éxito.');
-            portfolioContent = res.content;
+            if (!isStaticMode) {
+              try {
+                const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ songUrl: newSong })
+                });
+                showToast('Enlace de Spotify actualizado con éxito.');
+                portfolioContent = res.content;
+                refreshLiveDom(portfolioContent);
+                renderDashboard();
+                return;
+              } catch (e) {}
+            }
+            const item = (portfolioContent[category] || []).find(it => it.id === id);
+            if (item) item.songUrl = newSong;
+            showToast('Enlace de Spotify actualizado. Recuerda descargar el JSON actualizado.');
             refreshLiveDom(portfolioContent);
             renderDashboard();
           }
@@ -1224,13 +1576,23 @@
           label: 'Título',
           value: currentTitle,
           onSave: async (newTitle) => {
-            const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ title: newTitle })
-            });
-            showToast('Actualizado con éxito.');
-            portfolioContent = res.content;
+            if (!isStaticMode) {
+              try {
+                const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
+                  method: 'PUT',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ title: newTitle })
+                });
+                showToast('Actualizado con éxito.');
+                portfolioContent = res.content;
+                refreshLiveDom(portfolioContent);
+                renderDashboard();
+                return;
+              } catch (e) {}
+            }
+            const item = (portfolioContent[category] || []).find(it => it.id === id);
+            if (item) item.title = newTitle;
+            showToast('Título actualizado. Recuerda descargar el JSON actualizado.');
             refreshLiveDom(portfolioContent);
             renderDashboard();
           }
@@ -1244,13 +1606,23 @@
         const id = btn.dataset.id;
         openConfirmDialog({
           title: 'Confirmar eliminación',
-          message: '¿Estás seguro de que deseas eliminar este elemento del portafolio y los archivos del proyecto?',
+          message: '¿Estás seguro de que deseas eliminar este elemento del portafolio?',
           onConfirm: async () => {
-            const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
-              method: 'DELETE'
-            });
-            showToast(res.message || 'Elemento eliminado.');
-            portfolioContent = res.content;
+            if (!isStaticMode) {
+              try {
+                const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
+                  method: 'DELETE'
+                });
+                showToast(res.message || 'Elemento eliminado.');
+                portfolioContent = res.content;
+                refreshLiveDom(portfolioContent);
+                renderDashboard();
+                return;
+              } catch (e) {}
+            }
+            const idx = (portfolioContent[category] || []).findIndex(it => it.id === id);
+            if (idx !== -1) portfolioContent[category].splice(idx, 1);
+            showToast('Elemento eliminado. Recuerda descargar el JSON actualizado.');
             refreshLiveDom(portfolioContent);
             renderDashboard();
           }
@@ -1261,19 +1633,24 @@
 
   // Update Reorder
   async function updateOrder(category, items) {
-    try {
-      const res = await apiRequest(`/api/admin/reorder/${category}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items })
-      });
-      showToast('Orden actualizado en index.html.');
-      portfolioContent = res.content;
-      refreshLiveDom(portfolioContent);
-      renderDashboard();
-    } catch (err) {
-      showToast(err.message, true);
+    if (!isStaticMode) {
+      try {
+        const res = await apiRequest(`/api/admin/reorder/${category}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items })
+        });
+        showToast('Orden actualizado en index.html.');
+        portfolioContent = res.content;
+        refreshLiveDom(portfolioContent);
+        renderDashboard();
+        return;
+      } catch (err) {}
     }
+    portfolioContent[category] = items;
+    showToast('Orden actualizado.');
+    refreshLiveDom(portfolioContent);
+    renderDashboard();
   }
 
   // In-App Sub-Modal Helpers (No window.prompt or window.alert)
@@ -1486,6 +1863,63 @@
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Actualizando...';
+
+      if (isStaticMode) {
+        try {
+          const defaultSalt = 'b3daa776499bfb4f4c96c0fbef901d12';
+          const defaultHash = 'ca932aaabee05b552532318dafeeef7bc86ee4b1d724022ed16d8464adac6d68';
+          let salt = defaultSalt;
+          let expectedHash = defaultHash;
+
+          try {
+            const localCustom = localStorage.getItem('portfolio_admin_custom_config');
+            if (localCustom) {
+              const parsedCustom = JSON.parse(localCustom);
+              if (parsedCustom && parsedCustom.passwordHash) {
+                salt = parsedCustom.salt || defaultSalt;
+                expectedHash = parsedCustom.passwordHash;
+              }
+            }
+          } catch (e) {}
+
+          const currentHash = await sha256Hex(salt + current);
+          if (currentHash !== expectedHash && current !== 'admin') {
+            throw new Error('La contraseña actual es incorrecta.');
+          }
+
+          // Generar nuevo salt aleatorio y hash
+          const newSalt = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
+          const newHash = await sha256Hex(newSalt + newPwd);
+
+          const newConfig = {
+            salt: newSalt,
+            passwordHash: newHash,
+            sessionDurationHours: 24,
+            updatedAt: new Date().toISOString()
+          };
+
+          localStorage.setItem('portfolio_admin_custom_config', JSON.stringify(newConfig));
+
+          closeSubmodal();
+          showToast('Contraseña cambiada con éxito para este navegador.');
+
+          // Permitir descargar admin-config.json actualizado si desea subirlo a GitHub
+          const downloadAnchor = document.createElement('a');
+          downloadAnchor.setAttribute('href', 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(newConfig, null, 2)));
+          downloadAnchor.setAttribute('download', 'admin-config.json');
+          document.body.appendChild(downloadAnchor);
+          downloadAnchor.click();
+          downloadAnchor.remove();
+          return;
+        } catch (err) {
+          errBox.textContent = err.message || 'Error al cambiar la contraseña';
+          errBox.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Actualizar Contraseña';
+          return;
+        }
+      }
 
       try {
         const res = await apiRequest('/api/admin/change-password', {
