@@ -179,6 +179,7 @@ app.post("/api/admin/upload-image", requireAdmin, (req, res) => {
     const category = req.body.category === "musica" ? "musica" : "arte";
     const caption = (req.body.caption || "").trim();
     const description = (req.body.description || "").trim();
+    const songUrl = (req.body.songUrl || "").trim();
     const relativeSrc = `images/${category}/${req.file.filename}`;
 
     const content = getContent();
@@ -188,7 +189,8 @@ app.post("/api/admin/upload-image", requireAdmin, (req, res) => {
       id: `${category}-${Date.now()}`,
       src: relativeSrc,
       cap: caption,
-      description: description
+      description: description,
+      songUrl: songUrl
     };
 
     // Prepend or append depending on preference (append to end by default)
@@ -252,7 +254,7 @@ app.post("/api/admin/add-video", requireAdmin, (req, res) => {
 // 8. Update Item (Caption or Title)
 app.put("/api/admin/items/:category/:id", requireAdmin, (req, res) => {
   const { category, id } = req.params;
-  const { cap, title, videoId, description } = req.body;
+  const { cap, title, videoId, description, songUrl } = req.body;
 
   const content = getContent();
   if (!content[category]) {
@@ -267,6 +269,7 @@ app.put("/api/admin/items/:category/:id", requireAdmin, (req, res) => {
   if (cap !== undefined) content[category][itemIndex].cap = cap.trim();
   if (title !== undefined) content[category][itemIndex].title = title.trim();
   if (description !== undefined) content[category][itemIndex].description = description.trim();
+  if (songUrl !== undefined) content[category][itemIndex].songUrl = songUrl.trim();
   if (videoId !== undefined) {
     const validId = extractYouTubeId(videoId);
     if (validId) content[category][itemIndex].videoId = validId;

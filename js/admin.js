@@ -831,9 +831,17 @@
           </div>
 
           <div class="admin-input-group" style="margin-top:12px; margin-bottom:0;">
-            <label for="imageDescInput">Descripción de la obra (se mostrará en el lado derecho al ampliar la imagen)</label>
+            <label for="imageDescInput">Descripción de la obra (se mostrará al ampliar la imagen)</label>
             <textarea id="imageDescInput" name="description" class="admin-input" rows="2" placeholder="Escribe una breve descripción para cuando se amplíe la obra..."></textarea>
           </div>
+
+          ${category === 'musica' ? `
+            <div class="admin-input-group" style="margin-top:12px; margin-bottom:0;">
+              <label for="imageSongInput">🎵 Enlace de la canción en Spotify (reproducirá al pulsar la imagen)</label>
+              <input type="text" id="imageSongInput" name="songUrl" class="admin-input" placeholder="https://open.spotify.com/track/... o spotify:track:...">
+              <div style="font-size:0.75rem; color:#666; margin-top:4px;">Pega el enlace o URI de Spotify para que suene automáticamente al ampliar esta imagen.</div>
+            </div>
+          ` : ''}
         </form>
       </div>
 
@@ -858,14 +866,23 @@
                   ${escapeHtml(item.cap || '(Sin pie de foto)')}
                 </div>
                 ${item.description ? `
-                  <div style="font-size:0.75rem; color:#444; margin:4px 0 8px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(item.description)}">
+                  <div style="font-size:0.75rem; color:#444; margin:4px 0 6px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(item.description)}">
                     <span style="color:#b45309; font-weight:600;">📖</span> ${escapeHtml(item.description)}
                   </div>
                 ` : `
-                  <div style="font-size:0.72rem; color:#888; margin:4px 0 8px; font-style:italic;">
+                  <div style="font-size:0.72rem; color:#888; margin:4px 0 6px; font-style:italic;">
                     (Sin descripción ampliada)
                   </div>
                 `}
+                ${category === 'musica' ? (item.songUrl ? `
+                  <div style="font-size:0.74rem; color:#15803d; margin:2px 0 6px; font-weight:600; display:flex; align-items:center; gap:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(item.songUrl)}">
+                    <span>🎵</span> <span style="overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.songUrl)}</span>
+                  </div>
+                ` : `
+                  <div style="font-size:0.72rem; color:#888; margin:2px 0 6px; font-style:italic;">
+                    🎵 (Sin enlace de Spotify asignado)
+                  </div>
+                `) : ''}
                 <div class="admin-item-sub" title="${escapeHtml(item.src)}">${escapeHtml(item.src)}</div>
                 <div class="admin-item-controls">
                   <div style="display:flex; gap:4px;">
@@ -873,6 +890,9 @@
                     <button class="admin-item-btn btn-move-down" data-idx="${idx}" title="Mover abajo" ${idx === items.length - 1 ? 'disabled' : ''}>⬇️</button>
                     <button class="admin-item-btn btn-edit-cap" data-id="${escapeHtml(item.id)}" data-cap="${escapeHtml(item.cap || '')}" title="Editar pie de foto">✏️</button>
                     <button class="admin-item-btn btn-edit-desc" data-id="${escapeHtml(item.id)}" data-desc="${escapeHtml(item.description || '')}" title="Editar descripción de vista ampliada">📝</button>
+                    ${category === 'musica' ? `
+                      <button class="admin-item-btn btn-edit-song" data-id="${escapeHtml(item.id)}" data-song="${escapeHtml(item.songUrl || '')}" title="Editar enlace de canción en Spotify">🎵</button>
+                    ` : ''}
                   </div>
                   <button class="admin-item-btn btn-delete" data-id="${escapeHtml(item.id)}" title="Eliminar">🗑️</button>
                 </div>
@@ -1152,7 +1172,7 @@
         const currentDesc = btn.dataset.desc || '';
         openEditDialog({
           title: 'Editar descripción para vista ampliada',
-          label: 'Descripción (se mostrará en el lado derecho al ampliar la imagen)',
+          label: 'Descripción (se mostrará en el visor al ampliar la obra)',
           value: currentDesc,
           multiline: true,
           onSave: async (newDesc) => {
@@ -1162,6 +1182,31 @@
               body: JSON.stringify({ description: newDesc })
             });
             showToast('Descripción actualizada con éxito.');
+            portfolioContent = res.content;
+            refreshLiveDom(portfolioContent);
+            renderDashboard();
+          }
+        });
+      });
+    });
+
+    // Edit Spotify song URL (for music section)
+    container.querySelectorAll('.btn-edit-song').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
+        const currentSong = btn.dataset.song || '';
+        openEditDialog({
+          title: 'Editar enlace de canción en Spotify',
+          label: 'Enlace o URI de la canción en Spotify (ej: https://open.spotify.com/track/... o spotify:track:...)',
+          value: currentSong,
+          multiline: false,
+          onSave: async (newSong) => {
+            const res = await apiRequest(`/api/admin/items/${category}/${id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ songUrl: newSong })
+            });
+            showToast('Enlace de Spotify actualizado con éxito.');
             portfolioContent = res.content;
             refreshLiveDom(portfolioContent);
             renderDashboard();
@@ -1530,7 +1575,8 @@ git push
         const cap = item.cap ? `<p class="cap">${escapeHtml(item.cap)}</p>` : '';
         const descAttr = escapeHtml(item.description || '');
         const titleAttr = escapeHtml(item.cap || 'The Cat Wolfson Music Experience');
-        return `<div class="float-item" data-title="${titleAttr}" data-description="${descAttr}"><div class="thumb-wrap"><img class="lightbox-img" src="${escapeHtml(item.src)}" loading="lazy" alt="${titleAttr}"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div>${cap}</div>`;
+        const songAttr = escapeHtml(item.songUrl || '');
+        return `<div class="float-item" data-title="${titleAttr}" data-description="${descAttr}" data-song="${songAttr}"><div class="thumb-wrap"><img class="lightbox-img" src="${escapeHtml(item.src)}" loading="lazy" alt="${titleAttr}"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div>${cap}</div>`;
       }).join('\n');
     }
 

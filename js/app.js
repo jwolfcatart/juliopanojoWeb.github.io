@@ -85,6 +85,14 @@ const lightboxNavCluster = document.getElementById('lightboxNavCluster');
 const lightboxNavPrev = document.getElementById('lightboxNavPrev');
 const lightboxNavNext = document.getElementById('lightboxNavNext');
 
+// Elementos del reproductor inferior de música en lightbox
+const lightboxAudioBar = document.getElementById('lightboxAudioBar');
+const lightboxAudioPlayBtn = document.getElementById('lightboxAudioPlayBtn');
+const lightboxAudioTrack = document.getElementById('lightboxAudioTrack');
+const lightboxAudioSub = document.getElementById('lightboxAudioSub');
+const lightboxAudioSwitchBtn = document.getElementById('lightboxAudioSwitchBtn');
+const lightboxAudioVu = document.getElementById('lightboxAudioVu');
+
 let currentGalleryItems = [];
 let currentImageIndex = -1;
 let navPeekTimer = null;
@@ -123,10 +131,15 @@ function updateImageDisplay() {
   // Actualiza la imagen en el visor
   lightboxInner.innerHTML = `<img src="${src}" alt="${title}">`;
 
-  // Actualiza los textos del panel de descripción
+  // Actualiza los textos del panel de descripción (sin texto de encabezado "Descripción de la obra")
   if (lightboxDescTitle) lightboxDescTitle.textContent = title;
   if (lightboxDescText) lightboxDescText.textContent = desc || 'Obra visual de Julio Panojo.';
   if (lightboxDescCategory) lightboxDescCategory.textContent = category;
+
+  // Actualiza los controles de audio para imágenes de Música
+  if (typeof updateAudioBarUI === 'function') {
+    updateAudioBarUI();
+  }
 }
 
 function navigateLightbox(dir) {
@@ -179,7 +192,6 @@ function openImageLightboxFromItem(floatItem) {
     lightboxNavWrap.classList.remove('mouse-near');
 
     // Muestra sutilmente al abrir durante 1.6s y luego se oculta automáticamente
-    // a menos que el usuario acerque o deslice el ratón sobre la zona
     lightboxNavWrap.classList.add('mouse-near');
     clearTimeout(navPeekTimer);
     navPeekTimer = setTimeout(() => {
@@ -190,6 +202,16 @@ function openImageLightboxFromItem(floatItem) {
   lightbox.classList.add('img-mode');
   lightbox.classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // Si se abre una imagen de Música, reproducir la canción correspondiente desde Spotify
+  const isMusica = !!floatItem.closest('#musica');
+  if (isMusica) {
+    const rawSong = floatItem.dataset.song || '';
+    const itemUri = parseSpotifyUri(rawSong) || 'spotify:artist:0kUWxwltgihXYUb3eQmES5';
+    const itemTitle = floatItem.dataset.title || floatItem.querySelector('.cap')?.textContent.trim() || 'The Cat Wolfson';
+    playSpotifyTrack(itemUri, itemTitle);
+  }
+
   updateImageDisplay();
 }
 
@@ -201,13 +223,22 @@ function closeLightbox() {
     lightboxNavWrap.style.display = 'none';
     lightboxNavWrap.classList.remove('mouse-near');
   }
+  if (lightboxAudioBar) {
+    lightboxAudioBar.style.display = 'none';
+  }
   lightbox.classList.remove('open');
   lightbox.classList.remove('img-mode');
   lightbox.classList.remove('desc-open');
+  lightbox.classList.remove('audio-mode');
   if (lightboxInner) lightboxInner.innerHTML = '';
   document.body.style.overflow = '';
   currentGalleryItems = [];
   currentImageIndex = -1;
+
+  // Requisito: Al salir de la vista ampliada seguirá escuchándose la última canción que se haya reproducido
+  if (isSpotifyPlaying && spotifyMini) {
+    spotifyMini.classList.add('show');
+  }
 }
 
 // Detección del ratón para mostrar/ocultar navegación en lightbox
@@ -350,54 +381,154 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ===== Spotify: embed vía iFrame API + mini-reproductor (solo visible reproduciendo) =====
+// ===== Spotify: Reproducción individual por imagen + reproductor persistente =====
 let spotifyController = null;
+let isSpotifyPlaying = false;
+let currentlyPlayingUri = '';
+let currentlyPlayingTitle = '';
+let pendingSpotifyTrack = null;
 const spotifyMini = document.getElementById('spotifyMini');
 const spotifyMiniBtn = document.getElementById('spotifyMiniBtn');
 
+function parseSpotifyUri(urlOrUri) {
+  if (!urlOrUri) return null;
+  const str = String(urlOrUri).trim();
+  if (str.startsWith('spotify:')) return str;
+  const match = str.match(/open\.spotify\.com\/(?:intl-[a-z]+\/)?(track|album|artist|playlist)\/([a-zA-Z0-9]+)/);
+  if (match) {
+    return `spotify:${match[1]}:${match[2]}`;
+  }
+  return null;
+}
+
+function playSpotifyTrack(uri, title) {
+  if (!uri) uri = 'spotify:artist:0kUWxwltgihXYUb3eQmES5';
+  currentlyPlayingUri = uri;
+  currentlyPlayingTitle = title || 'The Cat Wolfson';
+
+  if (!spotifyController) {
+    pendingSpotifyTrack = { uri, title: currentlyPlayingTitle };
+  } else {
+    try {
+      spotifyController.loadUri(uri);
+      spotifyController.play();
+    } catch (e) {
+      console.warn('Error al cargar pista de Spotify:', e);
+    }
+  }
+  isSpotifyPlaying = true;
+  if (spotifyMini) spotifyMini.classList.add('show');
+  updateAudioBarUI();
+}
+
+function updateAudioBarUI() {
+  if (!lightboxAudioBar) return;
+
+  const currentItem = (currentImageIndex >= 0 && currentImageIndex < currentGalleryItems.length)
+    ? currentGalleryItems[currentImageIndex]
+    : null;
+
+  const isMusicaSection = currentItem && currentItem.closest('#musica');
+  if (!isMusicaSection || !lightbox.classList.contains('open')) {
+    lightboxAudioBar.style.display = 'none';
+    lightbox.classList.remove('audio-mode');
+    return;
+  }
+
+  lightboxAudioBar.style.display = 'flex';
+  lightbox.classList.add('audio-mode');
+  lightboxAudioBar.classList.toggle('playing', isSpotifyPlaying);
+
+  const playIcon = lightboxAudioBar.querySelector('.audio-icon-play');
+  const pauseIcon = lightboxAudioBar.querySelector('.audio-icon-pause');
+  if (playIcon && pauseIcon) {
+    playIcon.style.display = isSpotifyPlaying ? 'none' : 'block';
+    pauseIcon.style.display = isSpotifyPlaying ? 'block' : 'none';
+  }
+
+  const rawSong = currentItem.dataset.song || '';
+  const itemUri = parseSpotifyUri(rawSong) || 'spotify:artist:0kUWxwltgihXYUb3eQmES5';
+  const itemTitle = currentItem.dataset.title || currentItem.querySelector('.cap')?.textContent.trim() || 'The Cat Wolfson';
+
+  // Si la pista que suena actualmente es distinta a la de esta imagen:
+  // Requisito: al pasar a la siguiente imagen la canción no cambiará hasta que se le dé al Play en la imagen nueva
+  if (currentlyPlayingUri && itemUri && currentlyPlayingUri !== itemUri) {
+    if (lightboxAudioSwitchBtn) {
+      lightboxAudioSwitchBtn.style.display = 'inline-flex';
+      lightboxAudioSwitchBtn.onclick = (e) => {
+        e.stopPropagation();
+        playSpotifyTrack(itemUri, itemTitle);
+      };
+    }
+    if (lightboxAudioTrack) lightboxAudioTrack.textContent = currentlyPlayingTitle || 'The Cat Wolfson';
+    if (lightboxAudioSub) lightboxAudioSub.textContent = `Sonando ahora · Esta obra tiene otro tema`;
+  } else {
+    if (lightboxAudioSwitchBtn) lightboxAudioSwitchBtn.style.display = 'none';
+    if (lightboxAudioTrack) lightboxAudioTrack.textContent = currentlyPlayingTitle || itemTitle;
+    if (lightboxAudioSub) lightboxAudioSub.textContent = isSpotifyPlaying ? 'Reproduciendo en Spotify' : 'Pausado';
+  }
+}
+
+// Botón Play/Pausa de la barra inferior en Lightbox
+if (lightboxAudioPlayBtn) {
+  lightboxAudioPlayBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!spotifyController) {
+      const currentItem = (currentImageIndex >= 0 && currentImageIndex < currentGalleryItems.length)
+        ? currentGalleryItems[currentImageIndex]
+        : null;
+      if (currentItem && currentItem.closest('#musica')) {
+        const itemUri = parseSpotifyUri(currentItem.dataset.song) || 'spotify:artist:0kUWxwltgihXYUb3eQmES5';
+        const itemTitle = currentItem.dataset.title || currentItem.querySelector('.cap')?.textContent.trim() || 'The Cat Wolfson';
+        playSpotifyTrack(itemUri, itemTitle);
+      }
+      return;
+    }
+
+    const currentItem = (currentImageIndex >= 0 && currentImageIndex < currentGalleryItems.length)
+      ? currentGalleryItems[currentImageIndex]
+      : null;
+    if (currentItem && currentItem.closest('#musica')) {
+      const itemUri = parseSpotifyUri(currentItem.dataset.song) || 'spotify:artist:0kUWxwltgihXYUb3eQmES5';
+      const itemTitle = currentItem.dataset.title || currentItem.querySelector('.cap')?.textContent.trim() || 'The Cat Wolfson';
+      if (currentlyPlayingUri !== itemUri) {
+        playSpotifyTrack(itemUri, itemTitle);
+        return;
+      }
+    }
+
+    spotifyController.togglePlay();
+  });
+}
+
+// Inicialización de la API de Spotify en el elemento persistente
 window.onSpotifyIframeApiReady = (IFrameAPI) => {
-  const element = document.getElementById('spotifyEmbed');
+  const element = document.getElementById('spotifyAudioHost');
   if (!element) return;
-  const options = { uri: 'spotify:artist:0kUWxwltgihXYUb3eQmES5', width: '100%', height: '352' };
+  const initialUri = currentlyPlayingUri || 'spotify:artist:0kUWxwltgihXYUb3eQmES5';
+  const options = { uri: initialUri, width: 300, height: 80 };
   IFrameAPI.createController(element, options, (EmbedController) => {
     spotifyController = EmbedController;
     EmbedController.addListener('playback_update', (e) => {
       const isPaused = !!(e.data && e.data.isPaused);
-      spotifyMini.classList.toggle('show', !isPaused);
+      isSpotifyPlaying = !isPaused;
+      if (spotifyMini) spotifyMini.classList.toggle('show', !isPaused);
+      updateAudioBarUI();
     });
+
+    if (pendingSpotifyTrack) {
+      spotifyController.loadUri(pendingSpotifyTrack.uri);
+      spotifyController.play();
+      pendingSpotifyTrack = null;
+    }
   });
 };
 
-// Spotify a veces fuerza un scrollIntoView de su iframe al cambiar de pista;
-// si detectamos un salto de scroll no iniciado por el usuario hacia el iframe, lo revertimos.
-let userIsScrolling = false;
-let userScrollTimeout;
-window.addEventListener('wheel', () => {
-  userIsScrolling = true;
-  clearTimeout(userScrollTimeout);
-  userScrollTimeout = setTimeout(() => userIsScrolling = false, 600);
-}, { passive: true });
-window.addEventListener('touchmove', () => {
-  userIsScrolling = true;
-  clearTimeout(userScrollTimeout);
-  userScrollTimeout = setTimeout(() => userIsScrolling = false, 600);
-}, { passive: true });
-
-let lastKnownScroll = window.scrollY;
-window.addEventListener('scroll', () => {
-  const spotifyEmbedEl = document.getElementById('spotifyEmbed');
-  if (!spotifyEmbedEl) { lastKnownScroll = window.scrollY; return; }
-  const rect = spotifyEmbedEl.getBoundingClientRect();
-  const jumpedToPlayer = Math.abs(rect.top) < 4 || (rect.top >= 0 && rect.top < window.innerHeight * 0.15 && Math.abs(window.scrollY - lastKnownScroll) > 200);
-  if (!userIsScrolling && jumpedToPlayer && Math.abs(window.scrollY - lastKnownScroll) > 150) {
-    window.scrollTo(0, lastKnownScroll);
-  } else {
-    lastKnownScroll = window.scrollY;
-  }
-}, { passive: true });
-
 if (spotifyMiniBtn) {
-  spotifyMiniBtn.addEventListener('click', () => {
-    if (spotifyController) spotifyController.togglePlay();
+  spotifyMiniBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (spotifyController) {
+      spotifyController.togglePlay();
+    }
   });
 }
