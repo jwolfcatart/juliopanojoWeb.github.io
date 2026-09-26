@@ -28,6 +28,386 @@
     showToast('portfolio-content.json descargado.');
   }
 
+  // ===== GitHub Direct Sync (Sincronización Automática con GitHub REST API) =====
+  function getGitHubConfig() {
+    return {
+      token: localStorage.getItem('portfolio_github_token') || '',
+      repo: localStorage.getItem('portfolio_github_repo') || '',
+      branch: localStorage.getItem('portfolio_github_branch') || 'main'
+    };
+  }
+
+  function setGitHubConfig(token, repo, branch) {
+    if (token !== undefined) localStorage.setItem('portfolio_github_token', token.trim());
+    if (repo !== undefined) localStorage.setItem('portfolio_github_repo', repo.trim());
+    if (branch !== undefined) localStorage.setItem('portfolio_github_branch', (branch || 'main').trim());
+  }
+
+  // Realizar commit de un archivo vía GitHub REST API
+  async function githubCommitFile(filePath, fileContent, commitMsg, isBase64 = false) {
+    const { token, repo, branch } = getGitHubConfig();
+    if (!token || !repo) {
+      throw new Error('Configura primero tu repositorio y token de GitHub.');
+    }
+
+    const cleanPath = filePath.replace(/^\//, '');
+    const apiUrl = `https://api.github.com/repos/${repo}/contents/${cleanPath}?ref=${encodeURIComponent(branch)}`;
+
+    // 1. Obtener SHA del archivo existente si existe
+    let existingSha = null;
+    try {
+      const getRes = await fetch(apiUrl, {
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+      if (getRes.ok) {
+        const fileInfo = await getRes.json();
+        existingSha = fileInfo.sha;
+      }
+    } catch (e) {}
+
+    // 2. Preparar contenido base64 (soporta UTF-8 para emojis y tildes)
+    let contentBase64;
+    if (isBase64) {
+      contentBase64 = fileContent;
+    } else {
+      const utf8Bytes = new TextEncoder().encode(fileContent);
+      let binaryStr = '';
+      utf8Bytes.forEach(b => binaryStr += String.fromCharCode(b));
+      contentBase64 = btoa(binaryStr);
+    }
+
+    // 3. PUT para actualizar o crear el archivo
+    const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${cleanPath}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify({
+        message: commitMsg || `Actualizar ${cleanPath} desde el panel web`,
+        content: contentBase64,
+        sha: existingSha || undefined,
+        branch: branch
+      })
+    });
+
+    if (!putRes.ok) {
+      let errMsg = `Error de GitHub (${putRes.status})`;
+      try {
+        const errData = await putRes.json();
+        errMsg = errData.message || errMsg;
+      } catch (e) {}
+      throw new Error(errMsg);
+    }
+
+    return await putRes.json();
+  }
+
+  // Generar HTML sincronizado para index.html en cliente
+  function clientRenderArteHtml(items) {
+    return (items || []).map(item => {
+      const capHtml = item.cap ? `<p class="cap">${escapeHtml(item.cap)}</p>` : '';
+      const descAttr = escapeHtml(item.description || '');
+      const titleAttr = escapeHtml(item.cap || 'Arte');
+      return `        <div class="float-item" data-title="${titleAttr}" data-description="${descAttr}"><div class="thumb-wrap"><img class="lightbox-img" src="${escapeHtml(item.src)}" loading="lazy" alt="${titleAttr}"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div>${capHtml}</div>`;
+    }).join('\n');
+  }
+
+  function clientRenderMusicaHtml(items) {
+    return (items || []).map(item => {
+      const capHtml = item.cap ? `<p class="cap">${escapeHtml(item.cap)}</p>` : '';
+      const descAttr = escapeHtml(item.description || '');
+      const titleAttr = escapeHtml(item.cap || 'The Cat Wolfson Music Experience');
+      const songAttr = escapeHtml(item.songUrl || '');
+      return `        <div class="float-item" data-title="${titleAttr}" data-description="${descAttr}" data-song="${songAttr}"><div class="thumb-wrap"><img class="lightbox-img" src="${escapeHtml(item.src)}" loading="lazy" alt="${titleAttr}"><span class="zoom-badge"><span class="circle"><svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5"/><line x1="15" y1="15" x2="20.5" y2="20.5"/></svg></span></span></div>${capHtml}</div>`;
+    }).join('\n');
+  }
+
+  function clientRenderVideoHtml(items) {
+    return (items || []).map(item => {
+      return `        <button class="video-chip" data-video="${escapeHtml(item.videoId)}">\n          <div class="video-thumb"><img src="https://img.youtube.com/vi/${escapeHtml(item.videoId)}/hqdefault.jpg" loading="lazy" alt="${escapeHtml(item.title)}"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>\n          <p class="video-title">${escapeHtml(item.title)}</p>\n        </button>`;
+    }).join('\n');
+  }
+
+  function clientRenderVozHtml(items) {
+    return (items || []).map(item => {
+      return `        <button class="video-chip" data-video="${escapeHtml(item.videoId)}">\n          <div class="video-thumb"><img src="https://img.youtube.com/vi/${escapeHtml(item.videoId)}/hqdefault.jpg" loading="lazy" alt="${escapeHtml(item.title)}"><div class="play-badge"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div></div>\n          <p class="video-title">${escapeHtml(item.title)}</p>\n        </button>`;
+    }).join('\n');
+  }
+
+  function clientSyncHtml(currentHtml, content) {
+    let html = currentHtml;
+    // Sync Arte
+    const aStart = '<!-- ARTE_GALLERY_START -->';
+    const aEnd = '<!-- ARTE_GALLERY_END -->';
+    if (html.includes(aStart) && html.includes(aEnd)) {
+      html = html.replace(new RegExp(`${aStart}[\\s\\S]*?${aEnd}`), `${aStart}\n${clientRenderArteHtml(content.arte)}\n        ${aEnd}`);
+    }
+    // Sync Musica
+    const mStart = '<!-- MUSICA_GALLERY_START -->';
+    const mEnd = '<!-- MUSICA_GALLERY_END -->';
+    if (html.includes(mStart) && html.includes(mEnd)) {
+      html = html.replace(new RegExp(`${mStart}[\\s\\S]*?${mEnd}`), `${mStart}\n${clientRenderMusicaHtml(content.musica)}\n        ${mEnd}`);
+    }
+    // Sync Video
+    const vStart = '<!-- VIDEO_CLOUD_START -->';
+    const vEnd = '<!-- VIDEO_CLOUD_END -->';
+    if (html.includes(vStart) && html.includes(vEnd)) {
+      html = html.replace(new RegExp(`${vStart}[\\s\\S]*?${vEnd}`), `${vStart}\n${clientRenderVideoHtml(content.video)}\n        ${vEnd}`);
+    }
+    // Sync Voz
+    const zStart = '<!-- VOZ_CLOUD_START -->';
+    const zEnd = '<!-- VOZ_CLOUD_END -->';
+    if (html.includes(zStart) && html.includes(zEnd)) {
+      html = html.replace(new RegExp(`${zStart}[\\s\\S]*?${zEnd}`), `${zStart}\n${clientRenderVozHtml(content.voz)}\n        ${zEnd}`);
+    }
+    // Sync Logos
+    if (content.logos) {
+      for (const [key, logoData] of Object.entries(content.logos)) {
+        const src = typeof logoData === 'string' ? logoData : logoData?.src;
+        if (!src) continue;
+        const reg1 = new RegExp(`(<img[^>]*data-logo="${key}"[^>]*src=")[^"]*(")`, 'g');
+        html = html.replace(reg1, `$1${escapeHtml(src)}$2`);
+        const reg2 = new RegExp(`(<img[^>]*src=")[^"]*("[^>]*data-logo="${key}")`, 'g');
+        html = html.replace(reg2, `$1${escapeHtml(src)}$2`);
+      }
+    }
+    // Sync settings
+    if (content.settings) {
+      if (content.settings.hideFooter) {
+        html = html.replace(/<div class="contact-pill[^"]*" id="footerContactPill"[^>]*>/g, '<div class="contact-pill hidden-footer" id="footerContactPill" style="display:none;">');
+      } else {
+        html = html.replace(/<div class="contact-pill[^"]*" id="footerContactPill"[^>]*>/g, '<div class="contact-pill" id="footerContactPill">');
+      }
+    }
+    // Sync embedded JSON
+    const scriptRegex = /<script id="portfolioInitialData" type="application\/json">[\s\S]*?<\/script>/;
+    const scriptTag = `<script id="portfolioInitialData" type="application/json">\n${JSON.stringify(content, null, 2)}\n</script>`;
+    if (scriptRegex.test(html)) {
+      html = html.replace(scriptRegex, scriptTag);
+    }
+    return html;
+  }
+
+  // Sincronizar todos los cambios a GitHub
+  async function syncAllToGitHub(statusBtn) {
+    const { token, repo } = getGitHubConfig();
+    if (!token || !repo) {
+      openGitHubConfigModal();
+      return;
+    }
+
+    if (statusBtn) {
+      statusBtn.disabled = true;
+      statusBtn.textContent = '🚀 Subiendo a GitHub...';
+    }
+    showToast('Conectando y subiendo cambios a GitHub...');
+
+    try {
+      // 1. Subir cualquier icono SVG o imagen nueva en base64 a su archivo en el repo
+      if (portfolioContent.logos) {
+        for (const [key, logoData] of Object.entries(portfolioContent.logos)) {
+          const src = typeof logoData === 'string' ? logoData : logoData?.src;
+          if (src && src.startsWith('data:image/svg+xml;utf8,')) {
+            const svgContent = decodeURIComponent(src.replace('data:image/svg+xml;utf8,', ''));
+            const filePath = `images/inicio/icon_${key}.svg`;
+            await githubCommitFile(filePath, svgContent, `Actualizar icono ${key} (SVG)`);
+            if (typeof portfolioContent.logos[key] === 'object') {
+              portfolioContent.logos[key].src = filePath;
+            } else {
+              portfolioContent.logos[key] = filePath;
+            }
+          } else if (src && src.startsWith('data:')) {
+            const match = src.match(/^data:([^;]+);base64,(.+)$/);
+            if (match) {
+              const mime = match[1];
+              const b64 = match[2];
+              const ext = mime.includes('png') ? 'png' : mime.includes('jpeg') || mime.includes('jpg') ? 'jpg' : 'png';
+              const filePath = `images/inicio/${key}_${Date.now()}.${ext}`;
+              await githubCommitFile(filePath, b64, `Subir imagen ${key}`, true);
+              if (typeof portfolioContent.logos[key] === 'object') {
+                portfolioContent.logos[key].src = filePath;
+              } else {
+                portfolioContent.logos[key] = filePath;
+              }
+            }
+          }
+        }
+      }
+
+      // Subir imágenes de arte/musica que sean dataURLs
+      for (const cat of ['arte', 'musica']) {
+        if (Array.isArray(portfolioContent[cat])) {
+          for (const item of portfolioContent[cat]) {
+            if (item.src && item.src.startsWith('data:')) {
+              const match = item.src.match(/^data:([^;]+);base64,(.+)$/);
+              if (match) {
+                const mime = match[1];
+                const b64 = match[2];
+                const ext = mime.includes('png') ? 'png' : 'jpg';
+                const fileName = `img_${item.id || Date.now()}.${ext}`;
+                const filePath = `images/${cat}/${fileName}`;
+                await githubCommitFile(filePath, b64, `Subir imagen ${fileName} a ${cat}`, true);
+                item.src = filePath;
+              }
+            }
+          }
+        }
+      }
+
+      // 2. Subir data/portfolio-content.json
+      const jsonContent = JSON.stringify(portfolioContent, null, 2);
+      await githubCommitFile('data/portfolio-content.json', jsonContent, 'Actualizar contenido del portafolio (portfolio-content.json)');
+
+      // 3. Subir index.html sincronizado
+      try {
+        const indexRes = await fetch('index.html');
+        if (indexRes.ok) {
+          const currentHtml = await indexRes.text();
+          if (currentHtml && !currentHtml.trim().startsWith('{')) {
+            const updatedHtml = clientSyncHtml(currentHtml, portfolioContent);
+            await githubCommitFile('index.html', updatedHtml, 'Sincronizar index.html con las nuevas obras y ajustes');
+          }
+        }
+      } catch (e) {
+        console.warn('Sincronización directa de index.html omitida:', e);
+      }
+
+      showToast('🎉 ¡Portafolio publicado con éxito en GitHub! Tu web se actualizará en 1-2 minutos.');
+    } catch (err) {
+      showToast('Error al sincronizar con GitHub: ' + err.message, true);
+    } finally {
+      if (statusBtn) {
+        statusBtn.disabled = false;
+        statusBtn.textContent = '🚀 Publicar en GitHub';
+      }
+    }
+  }
+
+  // Modal para configurar Token y Repositorio de GitHub
+  function openGitHubConfigModal() {
+    closeSubmodal();
+    const modal = document.getElementById('adminModalContent');
+    if (!modal) return;
+
+    const { token, repo, branch } = getGitHubConfig();
+
+    const sub = document.createElement('div');
+    sub.id = 'adminSubmodal';
+    sub.className = 'admin-submodal';
+    sub.innerHTML = `
+      <div class="admin-submodal-box" style="max-width:540px;">
+        <div class="admin-submodal-header">
+          <h4>🚀 Conectar con GitHub para Publicación Automática</h4>
+          <button type="button" class="admin-btn-close" id="ghModalCloseBtn">&times;</button>
+        </div>
+        <form id="formGitHubConfig">
+          <div class="admin-submodal-body">
+            <p style="font-size:0.86rem; color:#444; line-height:1.5; margin-bottom:14px;">
+              Configura tu repositorio una sola vez. Cada vez que hagas cambios en el portafolio (subir obras, cambiar textos, canciones o iconos), podrás publicarlos directamente en GitHub con un solo clic sin necesidad de descargar archivos ni abrir la terminal.
+            </p>
+            <div class="admin-input-group">
+              <label for="ghRepoInput">Repositorio de GitHub (usuario/repositorio)</label>
+              <input type="text" id="ghRepoInput" class="admin-input" placeholder="ej: juliopanojo/juliopanojo.github.io" value="${escapeHtml(repo)}" required>
+              <div class="admin-helper">El nombre de tu repositorio en GitHub donde está alojada la web.</div>
+            </div>
+            <div class="admin-input-group">
+              <label for="ghBranchInput">Rama principal</label>
+              <input type="text" id="ghBranchInput" class="admin-input" placeholder="main o master" value="${escapeHtml(branch || 'main')}" required>
+            </div>
+            <div class="admin-input-group">
+              <label for="ghTokenInput">Token de Acceso Personal de GitHub (PAT)</label>
+              <div class="admin-pwd-field">
+                <input type="password" id="ghTokenInput" class="admin-input" placeholder="ghp_... o github_pat_..." value="${escapeHtml(token)}" required autocomplete="off">
+                <button type="button" class="admin-pwd-toggle" data-target="ghTokenInput" aria-label="Mostrar/ocultar">👁️</button>
+              </div>
+              <div class="admin-helper" style="margin-top:8px; line-height:1.45; background:#eff6ff; padding:8px 10px; border-radius:6px; border:1px solid #bfdbfe;">
+                🔑 <strong>¿Cómo obtener tu token en 1 minuto?</strong><br>
+                1. Abre este enlace: <a href="https://github.com/settings/tokens/new?scopes=repo&description=PortafolioWebAdmin" target="_blank" rel="noopener" style="color:#0284c7; text-decoration:underline; font-weight:600;">Generar Token en GitHub</a>.<br>
+                2. Marca la casilla <strong>repo</strong> (acceso total a repositorios).<br>
+                3. Pulsa <em>Generate token</em> abajo del todo, cópialo y pégalo aquí. Se guarda privado en tu navegador.
+              </div>
+            </div>
+            <div id="ghConfigStatus" style="font-size:0.85rem; margin-top:10px; display:none; padding:8px 12px; border-radius:6px;"></div>
+          </div>
+          <div class="admin-submodal-footer">
+            <button type="button" class="admin-btn admin-btn-secondary" id="btnGhCancel">Cancelar</button>
+            <button type="submit" class="admin-btn admin-btn-primary" id="btnGhSave">Guardar y Probar Conexión</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    modal.appendChild(sub);
+    requestAnimationFrame(() => sub.classList.add('open'));
+
+    // Toggle token visibility
+    sub.querySelectorAll('.admin-pwd-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inp = document.getElementById(btn.dataset.target);
+        if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+      });
+    });
+
+    sub.querySelector('#ghModalCloseBtn')?.addEventListener('click', closeSubmodal);
+    sub.querySelector('#btnGhCancel')?.addEventListener('click', closeSubmodal);
+
+    sub.querySelector('#formGitHubConfig')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const inRepo = sub.querySelector('#ghRepoInput').value.trim();
+      const inBranch = sub.querySelector('#ghBranchInput').value.trim() || 'main';
+      const inToken = sub.querySelector('#ghTokenInput').value.trim();
+      const statusBox = sub.querySelector('#ghConfigStatus');
+      const saveBtn = sub.querySelector('#btnGhSave');
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Verificando con GitHub...';
+      statusBox.style.display = 'none';
+
+      try {
+        const testRes = await fetch(`https://api.github.com/repos/${inRepo}`, {
+          headers: {
+            'Authorization': `token ${inToken}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (!testRes.ok) {
+          if (testRes.status === 401) throw new Error('Token inválido o expirado.');
+          if (testRes.status === 404) throw new Error(`No se encontró el repositorio "${inRepo}". Verifica usuario y nombre.`);
+          throw new Error(`Error de conexión con GitHub (${testRes.status}).`);
+        }
+
+        const repoData = await testRes.json();
+        setGitHubConfig(inToken, inRepo, inBranch);
+
+        statusBox.style.display = 'block';
+        statusBox.style.background = '#f0fdf4';
+        statusBox.style.color = '#15803d';
+        statusBox.style.border = '1px solid #bbf7d0';
+        statusBox.innerHTML = `✅ Conexión exitosa con <strong>${escapeHtml(repoData.full_name)}</strong>. ¡Ya puedes sincronizar automáticamente!`;
+
+        showToast('GitHub conectado correctamente.');
+        setTimeout(() => {
+          closeSubmodal();
+          renderDashboard();
+        }, 1200);
+      } catch (err) {
+        statusBox.style.display = 'block';
+        statusBox.style.background = '#fef2f2';
+        statusBox.style.color = '#dc2626';
+        statusBox.style.border = '1px solid #fecaca';
+        statusBox.textContent = '❌ ' + (err.message || 'Error al conectar con GitHub.');
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar y Probar Conexión';
+      }
+    });
+  }
+
   // Create Toast
   function showToast(message, isError = false) {
     let toast = document.getElementById('adminToast');
@@ -208,7 +588,9 @@
 
     const contentType = (res.headers.get('content-type') || '').toLowerCase();
     if (!contentType.includes('application/json')) {
-      // El servidor devolvió HTML (ej: página 404 de GitHub Pages o error 502)
+      if (res.status === 429) {
+        throw new Error('Límite de peticiones excedido (429) o el servidor backend no está disponible en este alojamiento web.');
+      }
       throw new Error(`Respuesta no JSON del servidor (${res.status}).`);
     }
 
@@ -473,7 +855,10 @@
         </div>
         <div class="admin-header-actions">
           ${isStaticMode ? `
-            <button class="admin-btn admin-btn-primary" id="btnHeaderDownloadJson" title="Descargar portfolio-content.json con los cambios para subir a tu repositorio" style="font-size:0.8rem; padding:6px 12px; gap:6px;">
+            <button class="admin-btn admin-btn-primary" id="btnHeaderSyncGitHub" title="Subir cambios automáticamente a tu repositorio de GitHub" style="font-size:0.8rem; padding:6px 12px; gap:6px; background:#16a34a; color:#fff; border:none;">
+              🚀 Sincronizar con GitHub
+            </button>
+            <button class="admin-btn admin-btn-secondary" id="btnHeaderDownloadJson" title="Descargar portfolio-content.json con los cambios para subir a tu repositorio" style="font-size:0.8rem; padding:6px 12px; gap:6px;">
               💾 Descargar JSON
             </button>
           ` : ''}
@@ -514,6 +899,7 @@
     `;
 
     document.getElementById('adminCloseBtn')?.addEventListener('click', () => toggleOverlay(false));
+    document.getElementById('btnHeaderSyncGitHub')?.addEventListener('click', (e) => syncAllToGitHub(e.currentTarget));
     document.getElementById('btnHeaderDownloadJson')?.addEventListener('click', downloadContentJson);
     document.getElementById('adminLogoutBtn')?.addEventListener('click', async () => {
       try {
@@ -750,6 +1136,16 @@
           footerStatus.textContent = isHidden ? '🔴 Pie de página Oculto' : '🟢 Pie de página Visible';
         }
 
+        if (isStaticMode) {
+          if (!portfolioContent.settings) portfolioContent.settings = {};
+          portfolioContent.settings.hideFooter = isHidden;
+          showToast(isHidden ? 'Pie de página ocultado en la web. Recuerda descargar el JSON para guardar los cambios.' : 'Pie de página visible en la web. Recuerda descargar el JSON.');
+          if (window.applyPortfolioSettings) {
+            window.applyPortfolioSettings(portfolioContent.settings);
+          }
+          return;
+        }
+
         try {
           const res = await apiRequest('/api/admin/settings', {
             method: 'POST',
@@ -808,6 +1204,41 @@
               submitBtn.textContent = 'Guardando icono...';
             }
             try {
+              if (isStaticMode) {
+                const cleanSvg = svgString.trim();
+                const svgDataUrl = 'data:image/svg+xml;utf8,' + encodeURIComponent(cleanSvg);
+                if (!portfolioContent.logos) portfolioContent.logos = {};
+                if (typeof portfolioContent.logos[key] === 'object' && portfolioContent.logos[key] !== null) {
+                  portfolioContent.logos[key].src = svgDataUrl;
+                } else {
+                  portfolioContent.logos[key] = { src: svgDataUrl, title: label };
+                }
+
+                if (previewImg) {
+                  previewImg.src = svgDataUrl;
+                }
+                if (urlInput) {
+                  urlInput.value = `images/inicio/icon_${key}.svg`;
+                }
+
+                refreshLiveDom(portfolioContent);
+                showToast(`Icono de ${label} aplicado en la web. Recuerda descargar el JSON para subirlo a tu repositorio.`);
+
+                // Descarga automática del archivo SVG para comodidad del usuario
+                try {
+                  const svgBlob = new Blob([cleanSvg], { type: 'image/svg+xml' });
+                  const dl = document.createElement('a');
+                  dl.href = URL.createObjectURL(svgBlob);
+                  dl.download = `icon_${key}.svg`;
+                  document.body.appendChild(dl);
+                  dl.click();
+                  dl.remove();
+                  setTimeout(() => URL.revokeObjectURL(dl.href), 1000);
+                } catch (dlErr) {}
+
+                return;
+              }
+
               const res = await apiRequest(`/api/admin/logos/${key}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -841,6 +1272,57 @@
           if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.textContent = 'Guardando...';
+          }
+
+          if (isStaticMode) {
+            try {
+              if (fileInput && fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = (re) => {
+                  const dataUrl = re.target.result;
+                  if (!portfolioContent.logos) portfolioContent.logos = {};
+                  if (typeof portfolioContent.logos[key] === 'object' && portfolioContent.logos[key] !== null) {
+                    portfolioContent.logos[key].src = dataUrl;
+                  } else {
+                    portfolioContent.logos[key] = { src: dataUrl, title: label };
+                  }
+                  if (previewImg) previewImg.src = dataUrl;
+                  if (urlInput) urlInput.value = dataUrl;
+                  refreshLiveDom(portfolioContent);
+                  showToast(`Elemento "${label}" actualizado. Recuerda descargar el JSON para subirlo a tu repositorio.`);
+                  renderDashboard();
+                  activeTab = 'logos';
+                  renderActiveTabContent();
+                };
+                reader.readAsDataURL(file);
+                return;
+              } else if (urlInput && urlInput.value.trim()) {
+                const newSrc = urlInput.value.trim();
+                if (!portfolioContent.logos) portfolioContent.logos = {};
+                if (typeof portfolioContent.logos[key] === 'object' && portfolioContent.logos[key] !== null) {
+                  portfolioContent.logos[key].src = newSrc;
+                } else {
+                  portfolioContent.logos[key] = { src: newSrc, title: label };
+                }
+                if (previewImg) previewImg.src = `${newSrc}?t=${Date.now()}`;
+                refreshLiveDom(portfolioContent);
+                showToast(`Ruta de "${label}" actualizada. Recuerda descargar el JSON para guardar los cambios.`);
+                renderDashboard();
+                activeTab = 'logos';
+                renderActiveTabContent();
+                return;
+              } else {
+                throw new Error('Selecciona un archivo, elige un icono del repositorio o escribe una ruta.');
+              }
+            } catch (err) {
+              showToast(err.message, true);
+              if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Guardar Elemento';
+              }
+              return;
+            }
           }
 
           try {
@@ -1940,32 +2422,68 @@
 
   // Tab: Files & Git Info
   async function renderFilesTab(container) {
+    const ghConfig = getGitHubConfig();
+
     container.innerHTML = `
+      <!-- Sincronización Automática con GitHub API -->
+      <div class="admin-card" style="border: 2px solid #22c55e;">
+        <div class="admin-card-title">
+          <span>⚡ Sincronización Automática con GitHub (Directo desde la Web)</span>
+          <span style="font-size:0.75rem; background:${ghConfig.token && ghConfig.repo ? '#dcfce7' : '#f1f5f9'}; color:${ghConfig.token && ghConfig.repo ? '#15803d' : '#475569'}; padding:3px 10px; border-radius:12px; font-weight:700;">
+            ${ghConfig.token && ghConfig.repo ? '🟢 Conectado con GitHub' : '⚪ Sin Configurar'}
+          </span>
+        </div>
+        <p style="font-size:0.86rem; color:#444; line-height:1.5; margin-bottom:14px;">
+          Permite que cualquier cambio que hagas en el portafolio (subir obras, cambiar descripciones, logos o canciones) se suba <strong>directamente a tu repositorio de GitHub</strong> sin tener que descargar archivos manualmente ni abrir la terminal. GitHub Pages detecta los commits y compila la web automáticamente en pocos segundos.
+        </p>
+
+        <form id="formTabGitHubConfig" style="background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0; margin-bottom:14px;">
+          <div style="display:grid; grid-template-columns: 1fr 140px; gap:12px; margin-bottom:12px;">
+            <div class="admin-input-group" style="margin-bottom:0;">
+              <label for="tabGhRepo">Repositorio en GitHub (usuario/nombre-repositorio)</label>
+              <input type="text" id="tabGhRepo" class="admin-input" placeholder="ej: tu-usuario/tu-repositorio" value="${escapeHtml(ghConfig.repo)}">
+            </div>
+            <div class="admin-input-group" style="margin-bottom:0;">
+              <label for="tabGhBranch">Rama</label>
+              <input type="text" id="tabGhBranch" class="admin-input" placeholder="main" value="${escapeHtml(ghConfig.branch || 'main')}">
+            </div>
+          </div>
+
+          <div class="admin-input-group">
+            <label for="tabGhToken">Token de Acceso Personal de GitHub (PAT)</label>
+            <div class="admin-pwd-field">
+              <input type="password" id="tabGhToken" class="admin-input" placeholder="ghp_... o github_pat_..." value="${escapeHtml(ghConfig.token)}" autocomplete="off">
+              <button type="button" class="admin-pwd-toggle" data-target="tabGhToken" aria-label="Mostrar/ocultar">👁️</button>
+            </div>
+            <div class="admin-helper" style="margin-top:8px; line-height:1.45; background:#eff6ff; padding:8px 10px; border-radius:6px; border:1px solid #bfdbfe;">
+              🔑 <strong>Obtén tu token en 1 minuto:</strong> Entra en <a href="https://github.com/settings/tokens/new?scopes=repo&description=PortafolioWebAdmin" target="_blank" rel="noopener" style="color:#0284c7; text-decoration:underline; font-weight:600;">este enlace directo de GitHub</a>, marca la casilla <strong>repo</strong>, pulsa <em>Generate token</em> abajo del todo y pégalo aquí. Se guarda privado en tu navegador.
+            </div>
+          </div>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+            <button type="submit" class="admin-btn admin-btn-primary" id="btnTabSaveGh">
+              💾 Guardar y Probar Conexión
+            </button>
+            <button type="button" class="admin-btn admin-btn-success" id="btnTabSyncNow" style="background:#16a34a; color:#fff; border:none;">
+              🚀 Sincronizar Cambios con GitHub Ahora
+            </button>
+          </div>
+          <div id="tabGhStatus" style="font-size:0.85rem; margin-top:12px; display:none; padding:8px 12px; border-radius:6px;"></div>
+        </form>
+      </div>
+
       <div class="admin-card">
         <div class="admin-card-title">
-          <span>📁 Estado de Archivos del Proyecto & Compatibilidad con GitHub</span>
+          <span>📁 Estado de Archivos del Proyecto & Descarga Manual de Respaldo</span>
         </div>
         <p style="font-size:0.88rem; color:#444; line-height:1.6; margin-bottom:16px;">
-          Cada vez que subes una imagen o agregas un enlace de vídeo en este panel, el servidor actualiza automáticamente
-          los archivos fuente del repositorio:
+          También puedes descargar manualmente la copia de seguridad de los datos de tu portafolio en cualquier momento:
         </p>
         <ul style="font-size:0.85rem; color:#333; line-height:1.8; margin-left:20px; margin-bottom:16px;">
           <li><strong>index.html:</strong> Se regeneran los bloques HTML estáticos correspondientes (galerías y reproductores).</li>
           <li><strong>data/portfolio-content.json:</strong> Base de datos estructurada en JSON con todos los items.</li>
-          <li><strong>images/arte/ y images/musica/:</strong> Las imágenes subidas se guardan físicamente en las carpetas del proyecto.</li>
+          <li><strong>images/:</strong> Fotografías, obras e iconos del proyecto.</li>
         </ul>
-
-        <div style="background:#f4f0e6; padding:14px; border-radius:8px; border:1px solid #dfd8c8; margin-bottom:16px;">
-          <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:6px;">🚀 Subir cambios a tu repositorio de GitHub</h4>
-          <p style="font-size:0.82rem; color:#555; margin-bottom:10px;">
-            Dado que todos los archivos se actualizan localmente en el proyecto, para sincronizar con GitHub solo necesitas ejecutar en tu terminal:
-          </p>
-          <div class="admin-git-box">
-git add .<br>
-git commit -m "Actualizar portafolio con nuevas imágenes y vídeos"<br>
-git push
-          </div>
-        </div>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
           <button class="admin-btn admin-btn-secondary" id="btnDownloadBackup">
@@ -1974,6 +2492,71 @@ git push
         </div>
       </div>
     `;
+
+    // Toggle token visibility
+    container.querySelectorAll('.admin-pwd-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inp = document.getElementById(btn.dataset.target);
+        if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+      });
+    });
+
+    const formGh = container.querySelector('#formTabGitHubConfig');
+    const statusBox = container.querySelector('#tabGhStatus');
+    const saveBtn = container.querySelector('#btnTabSaveGh');
+    const syncNowBtn = container.querySelector('#btnTabSyncNow');
+
+    formGh?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const inRepo = container.querySelector('#tabGhRepo').value.trim();
+      const inBranch = container.querySelector('#tabGhBranch').value.trim() || 'main';
+      const inToken = container.querySelector('#tabGhToken').value.trim();
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Verificando con GitHub...';
+      statusBox.style.display = 'none';
+
+      try {
+        const testRes = await fetch(`https://api.github.com/repos/${inRepo}`, {
+          headers: {
+            'Authorization': `token ${inToken}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (!testRes.ok) {
+          if (testRes.status === 401) throw new Error('Token de GitHub inválido o expirado.');
+          if (testRes.status === 404) throw new Error(`No se encontró el repositorio "${inRepo}". Verifica que tu usuario y nombre de repo sean correctos.`);
+          throw new Error(`Error de conexión con GitHub (${testRes.status}).`);
+        }
+
+        const repoData = await testRes.json();
+        setGitHubConfig(inToken, inRepo, inBranch);
+
+        statusBox.style.display = 'block';
+        statusBox.style.background = '#f0fdf4';
+        statusBox.style.color = '#15803d';
+        statusBox.style.border = '1px solid #bbf7d0';
+        statusBox.innerHTML = `✅ Conectado con éxito a <strong>${escapeHtml(repoData.full_name)}</strong> (rama <code>${escapeHtml(inBranch)}</code>). ¡Ya puedes sincronizar automáticamente!`;
+        showToast('Configuración de GitHub guardada con éxito.');
+        renderDashboard();
+        activeTab = 'files';
+        renderActiveTabContent();
+      } catch (err) {
+        statusBox.style.display = 'block';
+        statusBox.style.background = '#fef2f2';
+        statusBox.style.color = '#dc2626';
+        statusBox.style.border = '1px solid #fecaca';
+        statusBox.textContent = '❌ ' + (err.message || 'Error al conectar con GitHub.');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Guardar y Probar Conexión';
+      }
+    });
+
+    syncNowBtn?.addEventListener('click', (e) => {
+      syncAllToGitHub(e.currentTarget);
+    });
 
     document.getElementById('btnDownloadBackup')?.addEventListener('click', () => {
       const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(portfolioContent, null, 2));
@@ -2036,7 +2619,7 @@ git push
       }).join('\n');
     }
 
-    // Refresh Logos across the page (banner & 4 sections)
+    // Refresh Logos across the page (banner & 4 sections + footer / section icons)
     if (content.logos) {
       for (const [key, logoData] of Object.entries(content.logos)) {
         const src = typeof logoData === 'string' ? logoData : logoData?.src;
@@ -2044,6 +2627,38 @@ git push
         document.querySelectorAll(`img[data-logo="${key}"]`).forEach((img) => {
           img.src = `${src}?t=${Date.now()}`;
         });
+
+        // Actualizar enlaces de iconos en pie de página o secciones si se personalizan
+        const iconMap = {
+          icon_kofi: '#footerContactPill a[href*="ko-fi"]',
+          icon_patreon: '#footerContactPill a[href*="patreon"]',
+          icon_email: '#footerContactPill a[href^="mailto:"]',
+          icon_linkedin: '#footerContactPill a[href*="linkedin"]',
+          icon_youtube: '#musica a[href*="youtube"]',
+          icon_applemusic: '#musica a[href*="apple"]'
+        };
+
+        const targetSelector = iconMap[key];
+        if (targetSelector) {
+          const anchor = document.querySelector(targetSelector);
+          if (anchor) {
+            let img = anchor.querySelector('img.icon');
+            if (!img) {
+              const svg = anchor.querySelector('svg.icon');
+              if (svg) {
+                img = document.createElement('img');
+                img.className = 'icon';
+                img.style.width = '24px';
+                img.style.height = '24px';
+                img.style.objectFit = 'contain';
+                svg.replaceWith(img);
+              }
+            }
+            if (img) {
+              img.src = `${src}?t=${Date.now()}`;
+            }
+          }
+        }
       }
     }
 
